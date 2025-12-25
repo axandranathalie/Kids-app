@@ -8,11 +8,11 @@ export function ParentView() {
           to="/"
           className="inline-flex items-center rounded-xl border border-gray-300 px-3 py-2 text-sm font-semibold"
         >
-          ← Back
+          ← Tillbaka
         </Link>
       </header>
 
-      <h1 className="text-2xl font-bold">Parent mode</h1>
+      <h1 className="text-2xl font-bold">Vuxenläge</h1>
     </main>
   );
 }
