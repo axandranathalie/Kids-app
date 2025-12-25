@@ -1,0 +1,110 @@
+[
+  {
+    "id": "pappersflygplan-utmaning",
+    "title": "Pappersflygplan-utmaning",
+    "description": "Vik pappersflygplan och se vilket som flyger längst.",
+    "steps": [
+      "Vik ett pappersflygplan.",
+      "Välj en startlinje på golvet.",
+      "Kasta och mät hur långt det flög.",
+      "Testa igen med en ny vikning."
+    ],
+    "ageGroups": ["6-8", "9-10"],
+    "weather": "inomhus",
+    "timeOfDay": "eftermiddag",
+    "durationMinutes": 15,
+    "materials": ["Papper", "Tejp (valfritt)"],
+    "image": { "alt": "Ett pappersflygplan på ett bord" },
+    "source": "base"
+  },
+  {
+    "id": "skattjakt",
+    "title": "Skattjakt",
+    "description": "Göm små saker och gör ledtrådar för att hitta dem.",
+    "steps": [
+      "Välj 3–5 små saker att gömma.",
+      "Göm dem på olika platser.",
+      "Skriv eller rita enkla ledtrådar.",
+      "Låt någon leta med hjälp av ledtrådarna."
+    ],
+    "ageGroups": ["3-5", "6-8", "9-10"],
+    "weather": "valfritt",
+    "timeOfDay": "valfritt",
+    "durationMinutes": 20,
+    "materials": ["Små saker", "Papper", "Penna"],
+    "image": { "alt": "En enkel skattkarta ritad på papper" },
+    "source": "base"
+  },
+  {
+    "id": "dansstopp",
+    "title": "Dansstopp",
+    "description": "Sätt på musik och frys när musiken stannar.",
+    "steps": [
+      "Sätt på en låt.",
+      "Dansa så mycket du kan.",
+      "Pausa musiken plötsligt.",
+      "Frys som en staty tills musiken börjar igen."
+    ],
+    "ageGroups": ["3-5", "6-8"],
+    "weather": "inomhus",
+    "timeOfDay": "kväll",
+    "durationMinutes": 10,
+    "materials": ["Musik (mobil/högtalare)"],
+    "image": { "alt": "Barn som dansar i ett vardagsrum" },
+    "source": "base"
+  },
+  {
+    "id": "naturbingo",
+    "title": "Naturbingo",
+    "description": "Gå ut och leta efter saker i naturen som på en bingobricka.",
+    "steps": [
+      "Rita en bingobricka med 9 rutor.",
+      "Skriv saker att hitta (t.ex. kotte, sten, löv).",
+      "Gå ut och leta tillsammans.",
+      "Kryssa för när ni hittar något."
+    ],
+    "ageGroups": ["6-8", "9-10"],
+    "weather": "utomhus",
+    "timeOfDay": "eftermiddag",
+    "durationMinutes": 25,
+    "materials": ["Papper", "Penna"],
+    "image": { "alt": "En bingobricka med naturfynd" },
+    "source": "base"
+  },
+  {
+    "id": "bygg-en-bana",
+    "title": "Bygg en hinderbana",
+    "description": "Bygg en enkel bana med kuddar, stolar och tejp.",
+    "steps": [
+      "Välj en plats hemma eller ute.",
+      "Bygg en bana med säkra hinder.",
+      "Bestäm start och mål.",
+      "Ta tid och försök slå ditt rekord."
+    ],
+    "ageGroups": ["3-5", "6-8", "9-10"],
+    "weather": "valfritt",
+    "timeOfDay": "morgon",
+    "durationMinutes": 20,
+    "materials": ["Kuddar", "Stolar", "Tejp (valfritt)"],
+    "image": { "alt": "En enkel hinderbana gjord av kuddar" },
+    "source": "base"
+  },
+  {
+    "id": "rita-med-tärning",
+    "title": "Rita med tärning",
+    "description": "Slå en tärning och rita det som tärningen bestämmer.",
+    "steps": [
+      "Skriv sex saker ni kan rita (en per siffra).",
+      "Slå tärningen.",
+      "Rita det som matchar siffran.",
+      "Upprepa och gör en hel bild tillsammans."
+    ],
+    "ageGroups": ["6-8", "9-10"],
+    "weather": "inomhus",
+    "timeOfDay": "valfritt",
+    "durationMinutes": 15,
+    "materials": ["Papper", "Pennor", "Tärning"],
+    "image": { "alt": "En tärning bredvid en teckning" },
+    "source": "base"
+  }
+]
