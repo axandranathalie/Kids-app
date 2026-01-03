@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { Button } from "../components/ui/Button";
+import { OptionCard } from "../components/ui/OptionCard";
 
 // Icons
 import age3_5 from "../assets/icons/kid3-5.png";
@@ -27,39 +29,7 @@ const defaultFilters: KidsFilters = {
   when: null,
 };
 
-type OptionButtonProps = {
-  label: string;
-  iconSrc: string;
-  selected: boolean;
-  onClick: () => void;
-};
 
-function OptionButton({
-  label,
-  iconSrc,
-  selected,
-  onClick,
-}: OptionButtonProps) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={[
-        "w-full rounded-2xl border px-4 py-3 text-center font-semibold shadow-sm transition",
-        selected
-          ? "border-black bg-white"
-          : "border-gray-200 bg-white/70 hover:bg-white",
-      ].join(" ")}
-    >
-      <img
-        src={iconSrc}
-        alt=""
-        className="mx-auto mb-2 h-12 w-12 object-contain"
-      />
-      <span className="block">{label}</span>
-    </button>
-  );
-}
 
 export function KidsView() {
   const [filters, setFilters] = useState<KidsFilters>(defaultFilters);
@@ -93,19 +63,20 @@ export function KidsView() {
         <section className="mt-8">
           <h2 className="text-xl font-bold text-center">Hur gammal är du?</h2>
           <div className="mt-4 grid grid-cols-3 gap-3">
-            <OptionButton
+            <OptionCard
               label="3–5 år"
               iconSrc={age3_5}
               selected={filters.age === "3-5"}
               onClick={() => setFilters((p) => ({ ...p, age: "3-5" }))}
             />
-            <OptionButton
+
+            <OptionCard
               label="6–7 år"
               iconSrc={age6_7}
               selected={filters.age === "6-7"}
               onClick={() => setFilters((p) => ({ ...p, age: "6-7" }))}
             />
-            <OptionButton
+            <OptionCard
               label="8–10 år"
               iconSrc={age8_10}
               selected={filters.age === "8-10"}
@@ -118,19 +89,19 @@ export function KidsView() {
         <section className="mt-10">
           <h2 className="text-xl font-bold text-center">Var vill du leka?</h2>
           <div className="mt-4 grid grid-cols-3 gap-3">
-            <OptionButton
+            <OptionCard
               label="Inomhus"
               iconSrc={indoors}
               selected={filters.where === "indoors"}
               onClick={() => setFilters((p) => ({ ...p, where: "indoors" }))}
             />
-            <OptionButton
+            <OptionCard
               label="Utomhus"
               iconSrc={outdoors}
               selected={filters.where === "outdoors"}
               onClick={() => setFilters((p) => ({ ...p, where: "outdoors" }))}
             />
-            <OptionButton
+            <OptionCard
               label="Var som helst"
               iconSrc={anywhere}
               selected={filters.where === "anywhere"}
@@ -143,13 +114,13 @@ export function KidsView() {
         <section className="mt-10">
           <h2 className="text-xl font-bold text-center">När vill du leka?</h2>
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <OptionButton
+            <OptionCard
               label="Dag"
               iconSrc={day}
               selected={filters.when === "day"}
               onClick={() => setFilters((p) => ({ ...p, when: "day" }))}
             />
-            <OptionButton
+            <OptionCard
               label="Kväll"
               iconSrc={evening}
               selected={filters.when === "evening"}
@@ -158,22 +129,16 @@ export function KidsView() {
           </div>
         </section>
 
-        <button
+        <Button
           type="button"
           disabled={!canSubmit}
-          className={[
-            "mt-10 w-full rounded-full px-6 py-4 text-lg font-bold shadow-md transition",
-            canSubmit
-              ? "bg-rose-400 text-white hover:brightness-95"
-              : "bg-gray-200 text-gray-500 cursor-not-allowed",
-          ].join(" ")}
+          className="mt-10 w-full rounded-full py-4 text-lg"
           onClick={() => {
-            // Placeholder for next step: filtering + random activity selection.
             console.log("Selected filters:", filters);
           }}
         >
           Jag väljer en aktivitet åt dig 🎉
-        </button>
+        </Button>
       </div>
     </main>
   );
