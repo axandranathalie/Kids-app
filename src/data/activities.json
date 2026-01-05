@@ -9,7 +9,7 @@
       "Kasta och mät hur långt det flög.",
       "Testa igen med en ny vikning."
     ],
-    "ageGroups": ["6-8", "9-10"],
+    "ageGroups": ["5-7", "8-10"],
     "weather": "inomhus",
     "timeOfDay": "eftermiddag",
     "durationMinutes": 15,
@@ -27,7 +27,7 @@
       "Skriv eller rita enkla ledtrådar.",
       "Låt någon leta med hjälp av ledtrådarna."
     ],
-    "ageGroups": ["3-5", "6-8", "9-10"],
+    "ageGroups": ["2-4", "5-7", "8-10"],
     "weather": "valfritt",
     "timeOfDay": "valfritt",
     "durationMinutes": 20,
@@ -45,7 +45,7 @@
       "Pausa musiken plötsligt.",
       "Frys som en staty tills musiken börjar igen."
     ],
-    "ageGroups": ["3-5", "6-8"],
+    "ageGroups": ["5-7", "8-10"],
     "weather": "inomhus",
     "timeOfDay": "kväll",
     "durationMinutes": 10,
@@ -63,7 +63,7 @@
       "Gå ut och leta tillsammans.",
       "Kryssa för när ni hittar något."
     ],
-    "ageGroups": ["6-8", "9-10"],
+    "ageGroups": ["5-7", "8-10"],
     "weather": "utomhus",
     "timeOfDay": "eftermiddag",
     "durationMinutes": 25,
@@ -81,7 +81,7 @@
       "Bestäm start och mål.",
       "Ta tid och försök slå ditt rekord."
     ],
-    "ageGroups": ["3-5", "6-8", "9-10"],
+    "ageGroups": ["2-4", "5-7", "8-10"],
     "weather": "valfritt",
     "timeOfDay": "morgon",
     "durationMinutes": 20,
@@ -99,7 +99,7 @@
       "Rita det som matchar siffran.",
       "Upprepa och gör en hel bild tillsammans."
     ],
-    "ageGroups": ["6-8", "9-10"],
+    "ageGroups": ["5-7", "8-10"],
     "weather": "inomhus",
     "timeOfDay": "valfritt",
     "durationMinutes": 15,

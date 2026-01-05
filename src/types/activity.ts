@@ -1,4 +1,4 @@
-export type AgeGroup = "3-5" | "6-8" | "9-10";
+export type AgeGroup = "2-4" | "5-7" | "8-10";
 export type WeatherTag = "inomhus" | "utomhus" | "valfritt";
 export type TimeOfDay = "morgon" | "eftermiddag" | "kväll" | "valfritt";
 
@@ -19,6 +19,6 @@ export type Activity = {
     src?: string;
   };
 
-  source: "base" | "custom"; 
-  hidden?: boolean; 
+  source: "base" | "custom";
+  hidden?: boolean;
 };
