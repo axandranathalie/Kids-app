@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "../components/ui/Button";
 import { OptionCard } from "../components/ui/OptionCard";
 import { AppLayout } from "../components/layout/AppLayout";
-import { baseActivities } from "../data/activities";
+import { allActivities } from "../data/activities";
 import { filterActivities, type KidsFilters } from "../lib/filterActivities";
 import type { Activity } from "../types/activity";
 
@@ -30,9 +30,10 @@ export function KidsView() {
   // Enable submit only when all filters are selected.
   const canSubmit = Boolean(filters.age && filters.where && filters.when);
 
-  const filteredActivities = useMemo(() => {
-    return filterActivities(baseActivities, filters);
-  }, [filters]);
+const filteredActivities = useMemo(() => {
+  return filterActivities(allActivities, filters);
+}, [filters]);
+
 
   const pickRandomActivity = () => {
     // Reset previous result on every click.

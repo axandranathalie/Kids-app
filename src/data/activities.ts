@@ -1,8 +1,11 @@
-// Loads base activities from JSON.
-
-import raw from "./activities.json";
 import type { Activity } from "../types/activity";
+import { BASE_ACTIVITIES } from "./activities.base";
 
-export const baseActivities = raw as Activity[];
+// Built-in activities
+export const baseActivities: Activity[] = BASE_ACTIVITIES;
 
+// User-created activities (placeholder for later)
+export const customActivities: Activity[] = [];
 
+// All activities in one list
+export const allActivities: Activity[] = [...baseActivities, ...customActivities];
