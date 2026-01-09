@@ -78,6 +78,18 @@ export function ActivitySuggestionView() {
           {activity.description ? (
             <p className="mt-4 text-sm text-gray-700">{activity.description}</p>
           ) : null}
+
+          {activity.steps?.length ? (
+            <div className="mt-4">
+              <h3 className="text-sm font-bold">Så här gör du:</h3>
+
+              <ol className="mt-2 list-decimal space-y-2 pl-5 text-sm text-gray-700">
+                {activity.steps.map((step, index) => (
+                  <li key={`${activity.id}-step-${index}`}>{step}</li>
+                ))}
+              </ol>
+            </div>
+          ) : null}
         </div>
       </main>
     </div>
