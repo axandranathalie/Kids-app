@@ -1,11 +1,10 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/Button";
 import { OptionCard } from "../components/ui/OptionCard";
 import { AppLayout } from "../components/layout/AppLayout";
 import { allActivities } from "../data/activities";
 import { filterActivities, type KidsFilters } from "../lib/filterActivities";
-import type { Activity } from "../types/activity";
 
 // Icons
 import age2_4 from "../assets/icons/kid3-5.png";
@@ -24,8 +23,8 @@ const defaultFilters: KidsFilters = {
 };
 
 export function KidsView() {
+  const navigate = useNavigate();
   const [filters, setFilters] = useState<KidsFilters>(defaultFilters);
-  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
 
   // Enable submit only when all filters are selected.
   const canSubmit = Boolean(filters.age && filters.where && filters.when);
@@ -35,18 +34,18 @@ const filteredActivities = useMemo(() => {
 }, [filters]);
 
 
-  const pickRandomActivity = () => {
-    // Reset previous result on every click.
-    setSelectedActivity(null);
+const pickRandomActivity = () => {
+  if (!canSubmit) return;
 
-    if (!canSubmit) return;
+  const list = filteredActivities;
+  if (list.length === 0) return;
 
-    const list = filteredActivities;
-    if (list.length === 0) return;
+  const random = list[Math.floor(Math.random() * list.length)];
 
-    const random = list[Math.floor(Math.random() * list.length)];
-    setSelectedActivity(random);
-  };
+  // Navigate to the suggestion page and pass the chosen activity
+  navigate("/activity-suggestion", { state: { activity: random } });
+};
+
 
   return (
     <AppLayout
@@ -80,7 +79,6 @@ const filteredActivities = useMemo(() => {
               selected={filters.age === "2-4"}
               onClick={() => {
                 setFilters((p) => ({ ...p, age: "2-4" }));
-                setSelectedActivity(null);
               }}
             />
             <OptionCard
@@ -89,7 +87,6 @@ const filteredActivities = useMemo(() => {
               selected={filters.age === "5-7"}
               onClick={() => {
                 setFilters((p) => ({ ...p, age: "5-7" }));
-                setSelectedActivity(null);
               }}
             />
             <OptionCard
@@ -98,7 +95,6 @@ const filteredActivities = useMemo(() => {
               selected={filters.age === "8-10"}
               onClick={() => {
                 setFilters((p) => ({ ...p, age: "8-10" }));
-                setSelectedActivity(null);
               }}
             />
           </div>
@@ -114,7 +110,6 @@ const filteredActivities = useMemo(() => {
               selected={filters.where === "inomhus"}
               onClick={() => {
                 setFilters((p) => ({ ...p, where: "inomhus" }));
-                setSelectedActivity(null);
               }}
             />
             <OptionCard
@@ -123,7 +118,6 @@ const filteredActivities = useMemo(() => {
               selected={filters.where === "utomhus"}
               onClick={() => {
                 setFilters((p) => ({ ...p, where: "utomhus" }));
-                setSelectedActivity(null);
               }}
             />
             <OptionCard
@@ -132,7 +126,6 @@ const filteredActivities = useMemo(() => {
               selected={filters.where === "valfritt"}
               onClick={() => {
                 setFilters((p) => ({ ...p, where: "valfritt" }));
-                setSelectedActivity(null);
               }}
             />
           </div>
@@ -148,7 +141,6 @@ const filteredActivities = useMemo(() => {
               selected={filters.when === "dag"}
               onClick={() => {
                 setFilters((p) => ({ ...p, when: "dag" }));
-                setSelectedActivity(null);
               }}
             />
             <OptionCard
@@ -157,7 +149,6 @@ const filteredActivities = useMemo(() => {
               selected={filters.when === "kväll"}
               onClick={() => {
                 setFilters((p) => ({ ...p, when: "kväll" }));
-                setSelectedActivity(null);
               }}
             />
           </div>
@@ -178,16 +169,6 @@ const filteredActivities = useMemo(() => {
           </p>
         ) : null}
 
-        {selectedActivity ? (
-          <div className="mt-6 rounded-2xl border border-gray-200 bg-white/70 p-4">
-            <h3 className="text-lg font-bold">{selectedActivity.title}</h3>
-            {selectedActivity.description ? (
-              <p className="mt-2 text-sm text-gray-600">
-                {selectedActivity.description}
-              </p>
-            ) : null}
-          </div>
-        ) : null}
       </main>
     </AppLayout>
   );
