@@ -42,8 +42,8 @@ const pickRandomActivity = () => {
 
   const random = list[Math.floor(Math.random() * list.length)];
 
-  // Navigate to the suggestion page and pass the chosen activity
-  navigate("/activity-suggestion", { state: { activity: random } });
+// Navigate to the suggestion page and pass chosen activity + filters
+navigate("/activity-suggestion", { state: { activity: random, filters } });
 };
 
 
