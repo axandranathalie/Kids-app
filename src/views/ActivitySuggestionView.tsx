@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import type { Activity } from "../types/activity";
 import { activityImageByFile } from "../lib/activityImages";
 import { allActivities } from "../data/activities";
@@ -26,13 +26,26 @@ export function ActivitySuggestionView() {
   const activity = state?.activity;
   const filters = state?.filters;
 
-  // IMPORTANT: hooks must be called before any early return
   const filteredActivities = useMemo(() => {
     if (!filters) return [];
     return filterActivities(allActivities, filters);
   }, [filters]);
 
-  if (!activity || !filters) {
+  useEffect(() => {
+  if (!filters) return;
+  if (activity) return;
+
+  const first = filteredActivities[0];
+  if (!first) return;
+
+  navigate("/activity-suggestion", {
+    replace: true,
+    state: { activity: first, filters },
+  });
+}, [activity, filters, filteredActivities, navigate]);
+
+
+  if (!filters) {
     return (
       <div className="min-h-dvh flex items-center justify-center p-6">
         <div className="max-w-md w-full rounded-2xl border border-gray-200 bg-white/70 p-5 text-center">
@@ -52,6 +65,32 @@ export function ActivitySuggestionView() {
       </div>
     );
   }
+  
+  if (!activity) {
+  if (!filteredActivities[0]) {
+    return (
+      <div className="min-h-dvh flex items-center justify-center p-6">
+        <div className="max-w-md w-full rounded-2xl border border-gray-200 bg-white/70 p-5 text-center">
+          <h1 className="text-xl font-bold">Inga aktiviteter hittades</h1>
+          <p className="mt-2 text-sm text-gray-600">
+            Testa att ändra dina val så hittar vi något 😊
+          </p>
+
+          <button
+            type="button"
+            className="mt-4 w-full rounded-full bg-black text-white py-3 font-semibold"
+            onClick={() => navigate("/kids")}
+          >
+            Till barnläge
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return null; 
+}
+
 
   const imgUrl = getActivityImageUrl(activity);
 
