@@ -29,23 +29,23 @@ export function KidsView() {
   // Enable submit only when all filters are selected.
   const canSubmit = Boolean(filters.age && filters.where && filters.when);
 
-const filteredActivities = useMemo(() => {
-  return filterActivities(allActivities, filters);
-}, [filters]);
+  const filteredActivities = useMemo(() => {
+    return filterActivities(allActivities, filters);
+  }, [filters]);
 
+  const hasResults = filteredActivities.length > 0;
 
-const pickRandomActivity = () => {
-  if (!canSubmit) return;
+  const pickRandomActivity = () => {
+    if (!canSubmit) return;
 
-  const list = filteredActivities;
-  if (list.length === 0) return;
+    const list = filteredActivities;
+    if (list.length === 0) return;
 
-  const random = list[Math.floor(Math.random() * list.length)];
+    const random = list[Math.floor(Math.random() * list.length)];
 
-// Navigate to the suggestion page and pass chosen activity + filters
-navigate("/activity-suggestion", { state: { activity: random, filters } });
-};
-
+    // Navigate to the suggestion page and pass chosen activity + filters
+    navigate("/activity-suggestion", { state: { activity: random, filters } });
+  };
 
   return (
     <AppLayout
@@ -156,19 +156,18 @@ navigate("/activity-suggestion", { state: { activity: random, filters } });
 
         <Button
           type="button"
-          disabled={!canSubmit}
+          disabled={!canSubmit || !hasResults}
           className="mt-10 w-full rounded-full py-4 text-lg"
           onClick={pickRandomActivity}
         >
           Jag väljer en aktivitet åt dig 🎉
         </Button>
 
-        {canSubmit && filteredActivities.length === 0 ? (
+        {canSubmit && !hasResults ? (
           <p className="mt-4 text-sm text-gray-600">
             Jag hittade ingen aktivitet som matchar. Testa att ändra dina val 😊
           </p>
         ) : null}
-
       </main>
     </AppLayout>
   );
