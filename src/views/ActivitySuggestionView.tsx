@@ -1,9 +1,13 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useMemo } from "react";
 import type { Activity } from "../types/activity";
 import { activityImageByFile } from "../lib/activityImages";
+import { allActivities } from "../data/activities";
+import { filterActivities, type KidsFilters } from "../lib/filterActivities";
 
 type LocationState = {
   activity?: Activity;
+  filters?: KidsFilters;
 };
 
 function getActivityImageUrl(activity: Activity): string | undefined {
@@ -20,9 +24,15 @@ export function ActivitySuggestionView() {
   const state = location.state as LocationState | null;
 
   const activity = state?.activity;
+  const filters = state?.filters;
 
-  // If someone visits the route directly (no state), send them back to kids page.
-  if (!activity) {
+  // IMPORTANT: hooks must be called before any early return
+  const filteredActivities = useMemo(() => {
+    if (!filters) return [];
+    return filterActivities(allActivities, filters);
+  }, [filters]);
+
+  if (!activity || !filters) {
     return (
       <div className="min-h-dvh flex items-center justify-center p-6">
         <div className="max-w-md w-full rounded-2xl border border-gray-200 bg-white/70 p-5 text-center">
@@ -45,6 +55,19 @@ export function ActivitySuggestionView() {
 
   const imgUrl = getActivityImageUrl(activity);
 
+  const getNewActivity = () => {
+    const list = filteredActivities.filter((a) => a.id !== activity.id);
+    if (list.length === 0) return;
+
+    const random = list[Math.floor(Math.random() * list.length)];
+
+    // Replace state on same route (no extra history entry)
+    navigate("/activity-suggestion", {
+      replace: true,
+      state: { activity: random, filters },
+    });
+  };
+
   return (
     <div className="min-h-dvh p-6">
       <header className="flex items-center justify-between">
@@ -57,6 +80,7 @@ export function ActivitySuggestionView() {
 
         <h1 className="text-xl font-bold">Jag har hittat en aktivitet ✨</h1>
 
+        {/* Keeps the title centered */}
         <div className="w-21.5" />
       </header>
 
@@ -89,6 +113,21 @@ export function ActivitySuggestionView() {
                 ))}
               </ol>
             </div>
+          ) : null}
+
+          <button
+            type="button"
+            className="mt-6 w-full rounded-full bg-black text-white py-3 font-semibold disabled:opacity-50"
+            onClick={getNewActivity}
+            disabled={filteredActivities.length <= 1}
+          >
+            Jag vill ha en ny aktivitet 🔄
+          </button>
+
+          {filteredActivities.length <= 1 ? (
+            <p className="mt-2 text-center text-xs text-gray-600">
+              Jag har inga fler som matchar dina val just nu.
+            </p>
           ) : null}
         </div>
       </main>
