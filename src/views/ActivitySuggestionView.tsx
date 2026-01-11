@@ -4,6 +4,9 @@ import type { Activity } from "../types/activity";
 import { activityImageByFile } from "../lib/activityImages";
 import { allActivities } from "../data/activities";
 import { filterActivities, type KidsFilters } from "../lib/filterActivities";
+import confettiIcon from "../assets/icons/confetti1.png";
+import refreshIcon from "../assets/icons/refresh.png";
+import soundIcon from "../assets/icons/sound.png";
 
 type LocationState = {
   activity?: Activity;
@@ -14,7 +17,6 @@ function getActivityImageUrl(activity: Activity): string | undefined {
   const file = activity.image?.file;
   if (!file) return undefined;
 
-  // Matches filenames in /src/assets/activities/
   return activityImageByFile[file];
 }
 
@@ -32,22 +34,23 @@ export function ActivitySuggestionView() {
   }, [filters]);
 
   useEffect(() => {
-  if (!filters) return;
-  if (activity) return;
+    // If the user refreshes the page, routing state may be missing.
+    // If filters exist but the activity is missing, pick a fallback activity.
+    if (!filters) return;
+    if (activity) return;
 
-  const first = filteredActivities[0];
-  if (!first) return;
+    const first = filteredActivities[0];
+    if (!first) return;
 
-  navigate("/activity-suggestion", {
-    replace: true,
-    state: { activity: first, filters },
-  });
-}, [activity, filters, filteredActivities, navigate]);
-
+    navigate("/activity-suggestion", {
+      replace: true,
+      state: { activity: first, filters },
+    });
+  }, [activity, filters, filteredActivities, navigate]);
 
   if (!filters) {
     return (
-      <div className="min-h-dvh flex items-center justify-center p-6">
+      <div className="min-h-dvh flex items-center justify-center p-6 bg-[#fbf7ea]">
         <div className="max-w-md w-full rounded-2xl border border-gray-200 bg-white/70 p-5 text-center">
           <h1 className="text-xl font-bold">Ingen aktivitet vald</h1>
           <p className="mt-2 text-sm text-gray-600">
@@ -65,109 +68,161 @@ export function ActivitySuggestionView() {
       </div>
     );
   }
-  
+
   if (!activity) {
-  if (!filteredActivities[0]) {
-    return (
-      <div className="min-h-dvh flex items-center justify-center p-6">
-        <div className="max-w-md w-full rounded-2xl border border-gray-200 bg-white/70 p-5 text-center">
-          <h1 className="text-xl font-bold">Inga aktiviteter hittades</h1>
-          <p className="mt-2 text-sm text-gray-600">
-            Testa att ändra dina val så hittar vi något 😊
-          </p>
+    if (!filteredActivities[0]) {
+      return (
+        <div className="min-h-dvh flex items-center justify-center p-6 bg-[#fbf7ea]">
+          <div className="max-w-md w-full rounded-2xl border border-gray-200 bg-white/70 p-5 text-center">
+            <h1 className="text-xl font-bold">Inga aktiviteter hittades</h1>
+            <p className="mt-2 text-sm text-gray-600">
+              Testa att ändra dina val så hittar vi något 😊
+            </p>
 
-          <button
-            type="button"
-            className="mt-4 w-full rounded-full bg-black text-white py-3 font-semibold"
-            onClick={() => navigate("/kids")}
-          >
-            Till barnläge
-          </button>
+            <button
+              type="button"
+              className="mt-4 w-full rounded-full bg-black text-white py-3 font-semibold"
+              onClick={() => navigate("/kids")}
+            >
+              Till barnläge
+            </button>
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
+
+    // Navigation state update will happen in the effect above.
+    return null;
   }
-
-  return null; 
-}
-
 
   const imgUrl = getActivityImageUrl(activity);
 
   const getNewActivity = () => {
+    // Avoid repeating the same activity when selecting a new one.
     const list = filteredActivities.filter((a) => a.id !== activity.id);
     if (list.length === 0) return;
 
     const random = list[Math.floor(Math.random() * list.length)];
 
-    // Replace state on same route (no extra history entry)
+    // Replace state on the same route to avoid adding extra history entries.
     navigate("/activity-suggestion", {
       replace: true,
       state: { activity: random, filters },
     });
   };
 
+  const noMore = filteredActivities.length <= 1;
+
   return (
-    <div className="min-h-dvh p-6">
-      <header className="flex items-center justify-between">
+    <div className="min-h-dvh bg-[#fbf7ea] px-4 py-6 sm:px-6 font-kids">
+      <header className="relative">
         <Link
           to="/kids"
-          className="inline-flex items-center rounded-xl border border-gray-300 bg-white/60 px-3 py-2 text-sm font-semibold"
+          className="absolute left-0 top-0 inline-flex items-center rounded-xl border border-gray-300 bg-white/70 px-3 py-2 text-sm font-semibold"
         >
           ← Tillbaka
         </Link>
 
-        <h1 className="text-xl font-bold">Jag har hittat en aktivitet ✨</h1>
+        <div className="pt-12 sm:hidden">
+          <h1 className="flex items-center justify-center gap-3 text-2xl font-bold text-center">
+            Jag har hittat en aktivitet
+            <img src={confettiIcon} alt="" className="h-9 w-9" />
+          </h1>
+        </div>
 
-        {/* Keeps the title centered */}
-        <div className="w-21.5" />
+        <div className="hidden sm:flex items-center justify-center pt-2">
+          <h1 className="inline-flex items-center gap-3 text-4xl md:text-5xl font-bold tracking-tight whitespace-nowrap">
+            Jag har hittat en aktivitet
+            <img src={confettiIcon} alt="" className="h-12 w-12" />
+          </h1>
+        </div>
       </header>
 
       <main className="mt-6 flex justify-center">
-        <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white/70 p-4">
-          <h2 className="text-center text-lg font-bold">{activity.title}</h2>
-
-          {imgUrl ? (
-            <div className="mt-4 overflow-hidden rounded-xl border border-gray-200 bg-white">
-              <img
-                src={imgUrl}
-                alt={activity.image?.alt ?? activity.title}
-                className="w-full h-auto object-cover"
-                loading="lazy"
-              />
-            </div>
-          ) : null}
-
-          {activity.description ? (
-            <p className="mt-4 text-sm text-gray-700">{activity.description}</p>
-          ) : null}
-
-          {activity.steps?.length ? (
-            <div className="mt-4">
-              <h3 className="text-sm font-bold">Så här gör du:</h3>
-
-              <ol className="mt-2 list-decimal space-y-2 pl-5 text-sm text-gray-700">
-                {activity.steps.map((step, index) => (
-                  <li key={`${activity.id}-step-${index}`}>{step}</li>
-                ))}
-              </ol>
-            </div>
-          ) : null}
-
-          <button
-            type="button"
-            className="mt-6 w-full rounded-full bg-black text-white py-3 font-semibold disabled:opacity-50"
-            onClick={getNewActivity}
-            disabled={filteredActivities.length <= 1}
+        <div className="w-full max-w-md sm:max-w-xl md:max-w-2xl lg:max-w-3xl">
+          <div
+            className={[
+              "rounded-3xl border-2 overflow-hidden",
+              "border-pink-400",
+              "shadow-[0_8px_30px_rgba(0,0,0,0.08)]",
+              "bg-linear-to-b from-pink-200/70 via-pink-100/40 to-sky-200/50",
+            ].join(" ")}
           >
-            Jag vill ha en ny aktivitet 🔄
-          </button>
+            <div className="p-5 sm:p-8 md:p-10">
+              <div className="flex items-center justify-center gap-3">
+                <div className="px-5 py-2 text-center font-extrabold text-xl sm:text-2xl md:text-3xl text-gray-900">
+                  {activity.title}
+                </div>
 
-          {filteredActivities.length <= 1 ? (
-            <p className="mt-2 text-center text-xs text-gray-600">
-              Jag har inga fler som matchar dina val just nu.
-            </p>
-          ) : null}
+                <div className="inline-flex items-center justify-center rounded-full bg-emerald-100 px-3 py-2 border-2 border-emerald-600 shadow-sm">
+                  <img
+                    src={soundIcon}
+                    alt=""
+                    className="h-6 w-6 sm:h-7 sm:w-7"
+                  />
+                </div>
+              </div>
+
+              {imgUrl ? (
+                <div className="mt-5 flex justify-center">
+                  <div className="w-full max-w-xs sm:max-w-sm md:max-w-md overflow-hidden rounded-3xl border border-black/10 bg-white/60">
+                    <img
+                      src={imgUrl}
+                      alt={activity.image?.alt ?? activity.title}
+                      loading="lazy"
+                      className="w-full object-cover rounded-3xl max-h-80 sm:max-h-90 md:max-h-105"
+                    />
+                  </div>
+                </div>
+              ) : null}
+
+              {activity.description ? (
+                <p className="mt-5 text-center text-base sm:text-lg md:text-xl font-semibold text-gray-800">
+                  {activity.description}
+                </p>
+              ) : null}
+
+              {activity.steps?.length ? (
+                <div className="mt-4 flex justify-center">
+                  <ul className="w-full max-w-sm sm:max-w-md md:max-w-lg list-disc space-y-3 pl-12 text-base sm:text-lg md:text-xl text-gray-800">
+                    {activity.steps.map((step, index) => (
+                      <li key={`${activity.id}-step-${index}`}>{step}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+
+              <button
+                type="button"
+                className={[
+                  "mt-8 w-full rounded-full px-6 py-4 sm:py-5",
+                  "font-bold text-lg sm:text-xl md:text-2xl",
+                  "bg-emerald-100 text-gray-900 border-4 border-emerald-600",
+                  "shadow-sm transition active:scale-[0.99]",
+                  noMore ? "opacity-50" : "hover:brightness-[0.98]",
+                ].join(" ")}
+                onClick={getNewActivity}
+                disabled={noMore}
+              >
+                <span className="flex w-full items-center justify-center gap-3">
+                  <span className="text-center">
+                    Jag vill ha en ny aktivitet
+                  </span>
+                  <img
+                    src={refreshIcon}
+                    alt=""
+                    className="h-8 w-8 sm:h-9 sm:w-9"
+                  />
+                </span>
+              </button>
+
+              {noMore ? (
+                <p className="mt-3 text-center text-sm sm:text-base text-gray-700">
+                  Jag har inga fler som matchar dina val just nu.
+                </p>
+              ) : null}
+            </div>
+          </div>
         </div>
       </main>
     </div>
