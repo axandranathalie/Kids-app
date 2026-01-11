@@ -19,10 +19,18 @@ export function OptionCard({
       type="button"
       {...props}
       className={[
-        "w-full rounded-2xl border px-4 py-3 text-center font-semibold shadow-sm transition active:scale-[0.99]",
+        // Base
+        "w-full rounded-2xl border px-4 py-3 text-center font-semibold shadow-sm transition",
+        "active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-black/20",
+
+        // IMPORTANT:
+        // Inga bg-* här som kan slå ut färgen du skickar in.
+        // Vi har bara hover + selected styling som inte rör background.
         selected
-          ? "border-black bg-white"
-          : "border-gray-200 bg-white/70 hover:bg-white",
+          ? "ring-2 ring-black/20 border-black/30"
+          : "border-gray-200 hover:brightness-[0.98]",
+
+        // Theme/background comes from parent (KidsView)
         className,
       ]
         .filter(Boolean)
@@ -31,9 +39,9 @@ export function OptionCard({
       <img
         src={iconSrc}
         alt=""
-        className="mx-auto mb-2 h-20 w-20 object-contain scale-110"
+        className="mx-auto mb-2 h-14 w-14 object-contain sm:h-16 sm:w-16"
       />
-      <span className="block">{label}</span>
+      <span className="block text-sm sm:text-base">{label}</span>
     </button>
   );
 }
