@@ -3,6 +3,7 @@ import { StartView } from "../views/StartView";
 import { KidsView } from "../views/KidsView";
 import { ParentView } from "../views/ParentView";
 import { ActivitySuggestionView } from "../views/ActivitySuggestionView";
+import { ParentHomeView } from "../views/ParentHomeView";
 
 export function AppRouter() {
   return (
@@ -12,6 +13,7 @@ export function AppRouter() {
         <Route path="/kids" element={<KidsView />} />
         <Route path="/activity-suggestion" element={<ActivitySuggestionView />} />
         <Route path="/parent" element={<ParentView />} />
+        <Route path="/parent/home" element={<ParentHomeView />} />
       </Routes>
     </BrowserRouter>
   );
