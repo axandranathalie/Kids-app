@@ -1,6 +1,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
+import { AddActivityModal } from "../components/parent/AddActivityModal";
 
 import { allActivities } from "../data/activities";
 import type { Activity } from "../types/activity";
@@ -111,9 +112,16 @@ function Switch({ checked, onChange, disabled, label }: SwitchProps) {
 }
 
 export function ParentHomeView() {
-  const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => readHiddenIds());
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(() =>
+    readHiddenIds()
+  );
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [customActivities, setCustomActivities] = useState<Activity[]>([]);
 
-  const activities = allActivities;
+  const activities = useMemo(
+    () => [...customActivities, ...allActivities],
+    [customActivities]
+  );
 
   const totalCount = activities.length;
 
@@ -174,9 +182,10 @@ export function ParentHomeView() {
           </div>
         </div>
 
-        {/* Add button (UI only for this issue) */}
+        {/* Add button */}
         <button
           type="button"
+          onClick={() => setIsAddOpen(true)}
           className={[
             "mt-5 w-full rounded-full py-4 text-lg font-extrabold shadow-sm",
             "bg-orange-400 text-white border-2 border-orange-500",
@@ -269,6 +278,14 @@ export function ParentHomeView() {
           })}
         </ul>
       </section>
+      <AddActivityModal
+        open={isAddOpen}
+        onClose={() => setIsAddOpen(false)}
+        onSubmit={(newActivity) => {
+          setCustomActivities((prev) => [newActivity, ...prev]);
+          setIsAddOpen(false);
+        }}
+      />
     </main>
   );
 }
