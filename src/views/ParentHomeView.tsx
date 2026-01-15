@@ -7,7 +7,7 @@ import { allActivities } from "../data/activities";
 import type { Activity } from "../types/activity";
 import { getActivityImageUrl } from "../lib/getActivityImage";
 
-// LocalStorage key for hidden activities in kids mode
+// LocalStorage key for hidden activities (kids mode visibility)
 const HIDDEN_KEY = "kidsapp_hidden_activity_ids";
 
 function readHiddenIds(): Set<string> {
@@ -44,18 +44,22 @@ function getAgeLabels(activity: Activity): string[] {
 }
 
 function getWhereLabel(a: Activity): string {
-  // weather tag: inomhus / utomhus / valfritt
   if (a.weather === "inomhus") return "Inomhus";
   if (a.weather === "utomhus") return "Utomhus";
   return "Var som helst";
 }
 
 function getWhenLabel(a: Activity): string {
-  // timeOfDay: morgon / eftermiddag / kväll / valfritt
   if (a.timeOfDay === "morgon") return "Morgon";
   if (a.timeOfDay === "eftermiddag") return "Eftermiddag";
   if (a.timeOfDay === "kväll") return "Kväll";
   return "När som helst";
+}
+
+function resolveActivityImageSrc(activity: Activity): string | undefined {
+  // Custom activities can have image.src (blob/data URL from upload / edit),
+  // while base activities typically rely on image.file resolved via getActivityImageUrl().
+  return activity.image?.src ?? getActivityImageUrl(activity);
 }
 
 type ChipProps = {
@@ -112,12 +116,21 @@ function Switch({ checked, onChange, disabled, label }: SwitchProps) {
 }
 
 export function ParentHomeView() {
+  // Hidden ids are stored as a Set for fast lookups (O(1)).
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(() =>
     readHiddenIds()
   );
+
+  // One modal handles both "add" and "edit".
   const [isAddOpen, setIsAddOpen] = useState(false);
+
+  // Custom activities live in local state for now (LocalStorage persistence is a later issue).
   const [customActivities, setCustomActivities] = useState<Activity[]>([]);
 
+  // When set, the modal is in "edit" mode and gets pre-filled via initialActivity.
+  const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
+
+  // Build the view list: custom first, then base.
   const activities = useMemo(
     () => [...customActivities, ...allActivities],
     [customActivities]
@@ -134,10 +147,10 @@ export function ParentHomeView() {
   }, [activities, hiddenIds]);
 
   const toggleVisibility = (activityId: string, makeVisible: boolean) => {
+    // Persist hidden ids to LocalStorage so kids mode can respect it later.
     setHiddenIds((prev) => {
       const next = new Set(prev);
 
-      // makeVisible=true => remove from hidden
       if (makeVisible) next.delete(activityId);
       else next.add(activityId);
 
@@ -155,12 +168,9 @@ export function ParentHomeView() {
         >
           ← Tillbaka
         </Link>
-
-        {/* Keeps header spacing stable */}
         <div className="w-20" />
       </header>
 
-      {/* Top summary */}
       <section className="mx-auto mt-6 w-full max-w-4xl">
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="rounded-2xl bg-white/60 p-4 text-center shadow-sm border border-black/10">
@@ -182,10 +192,13 @@ export function ParentHomeView() {
           </div>
         </div>
 
-        {/* Add button */}
         <button
           type="button"
-          onClick={() => setIsAddOpen(true)}
+          onClick={() => {
+            // Ensure "add" mode (no seed) when creating a new activity.
+            setEditingActivity(null);
+            setIsAddOpen(true);
+          }}
           className={[
             "mt-5 w-full rounded-full py-4 text-lg font-extrabold shadow-sm",
             "bg-orange-400 text-white border-2 border-orange-500",
@@ -199,10 +212,9 @@ export function ParentHomeView() {
           Aktiviteter
         </h2>
 
-        {/* List */}
         <ul className="mt-4 space-y-3">
           {activities.map((activity) => {
-            const imgUrl = getActivityImageUrl(activity);
+            const imgUrl = resolveActivityImageSrc(activity);
             const hidden = isHidden(activity.id, hiddenIds);
 
             return (
@@ -211,7 +223,6 @@ export function ParentHomeView() {
                 className="rounded-2xl bg-white/60 p-4 shadow-sm border border-black/10"
               >
                 <div className="flex items-center gap-4">
-                  {/* Thumbnail */}
                   <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-black/10 bg-white/60">
                     {imgUrl ? (
                       <img
@@ -227,7 +238,6 @@ export function ParentHomeView() {
                     )}
                   </div>
 
-                  {/* Text + chips */}
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-base font-extrabold text-gray-900">
                       {activity.title}
@@ -253,8 +263,21 @@ export function ParentHomeView() {
                     </div>
                   </div>
 
-                  {/* Right controls */}
                   <div className="flex items-center gap-3">
+                    {/* Only custom activities are editable (base content stays read-only). */}
+                    {activity.source === "custom" ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingActivity(activity);
+                          setIsAddOpen(true);
+                        }}
+                        className="rounded-full border border-black/10 bg-white/70 px-3 py-2 text-xs font-extrabold text-gray-800"
+                      >
+                        Redigera
+                      </button>
+                    ) : null}
+
                     <div className="grid h-9 w-9 place-items-center rounded-full bg-white/70 border border-black/10">
                       {hidden ? (
                         <EyeOff className="h-5 w-5 text-gray-700" />
@@ -263,7 +286,6 @@ export function ParentHomeView() {
                       )}
                     </div>
 
-                    {/* Switch: ON = visible, OFF = hidden */}
                     <Switch
                       checked={!hidden}
                       onChange={(nextVisible) =>
@@ -278,12 +300,33 @@ export function ParentHomeView() {
           })}
         </ul>
       </section>
+
       <AddActivityModal
+        // Key forces a remount so the modal always re-initializes cleanly between add/edit/open states.
+        key={(editingActivity?.id ?? "new") + "-" + String(isAddOpen)}
         open={isAddOpen}
-        onClose={() => setIsAddOpen(false)}
-        onSubmit={(newActivity) => {
-          setCustomActivities((prev) => [newActivity, ...prev]);
+        initialActivity={editingActivity}
+        onClose={() => {
           setIsAddOpen(false);
+          setEditingActivity(null);
+        }}
+        onSubmit={(activityFromModal) => {
+          setCustomActivities((prev) => {
+            // Edit: replace the matching custom activity
+            if (editingActivity) {
+              return prev.map((a) =>
+                a.id === editingActivity.id
+                  ? { ...activityFromModal, id: a.id }
+                  : a
+              );
+            }
+
+            // Add: prepend new custom activity
+            return [activityFromModal, ...prev];
+          });
+
+          setIsAddOpen(false);
+          setEditingActivity(null);
         }}
       />
     </main>
