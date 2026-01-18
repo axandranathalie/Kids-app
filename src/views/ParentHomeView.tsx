@@ -6,6 +6,10 @@ import { AddActivityModal } from "../components/parent/AddActivityModal";
 import { allActivities } from "../data/activities";
 import type { Activity } from "../types/activity";
 import { getActivityImageUrl } from "../lib/getActivityImage";
+import {
+  readCustomActivities,
+  writeCustomActivities,
+} from "../lib/customActivitiesStorage";
 
 // LocalStorage key for hidden activities (kids mode visibility)
 const HIDDEN_KEY = "kidsapp_hidden_activity_ids";
@@ -124,8 +128,10 @@ export function ParentHomeView() {
   // One modal handles both "add" and "edit".
   const [isAddOpen, setIsAddOpen] = useState(false);
 
-  // Custom activities live in local state for now (LocalStorage persistence is a later issue).
-  const [customActivities, setCustomActivities] = useState<Activity[]>([]);
+  // Custom activities are persisted in LocalStorage.
+  const [customActivities, setCustomActivities] = useState<Activity[]>(() =>
+    readCustomActivities()
+  );
 
   // When set, the modal is in "edit" mode and gets pre-filled via initialActivity.
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
@@ -312,17 +318,18 @@ export function ParentHomeView() {
         }}
         onSubmit={(activityFromModal) => {
           setCustomActivities((prev) => {
-            // Edit: replace the matching custom activity
-            if (editingActivity) {
-              return prev.map((a) =>
-                a.id === editingActivity.id
-                  ? { ...activityFromModal, id: a.id }
-                  : a
-              );
-            }
+            const next = editingActivity
+              ? prev.map((a) =>
+                  a.id === editingActivity.id
+                    ? { ...activityFromModal, id: a.id }
+                    : a
+                )
+              : [activityFromModal, ...prev];
 
-            // Add: prepend new custom activity
-            return [activityFromModal, ...prev];
+            // Persist changes so the list survives reloads.
+            writeCustomActivities(next);
+
+            return next;
           });
 
           setIsAddOpen(false);
