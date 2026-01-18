@@ -82,16 +82,19 @@ export function AddActivityModal({
 
   const [imageFile, setImageFile] = useState<File | null>(null);
 
-  const existingImageSrc = seed?.image?.src ?? null;
+  // Persisted image (Data URL) so it survives refresh via LocalStorage
+  const [imageDataUrl, setImageDataUrl] = useState<string | null>(
+    () => seed?.image?.src ?? null
+  );
 
-  // Create file preview URL (session-only)
+  // Temporary preview URL for immediate feedback (does not survive refresh)
   const imagePreviewSrc = useMemo(() => {
     if (!imageFile) return null;
     return URL.createObjectURL(imageFile);
   }, [imageFile]);
 
-  // Prefer new file preview if selected, otherwise keep existing image in edit mode
-  const previewSrc = imagePreviewSrc ?? existingImageSrc;
+  // What we show in the UI: prefer preview, otherwise saved data URL
+  const previewSrc = imagePreviewSrc ?? imageDataUrl;
 
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [submitAttempted, setSubmitAttempted] = useState(false);
@@ -200,9 +203,10 @@ export function AddActivityModal({
       ageGroups,
       weather: where,
       timeOfDay: when,
-      image: previewSrc
-        ? { src: previewSrc, alt: title.trim() || "Aktivitetsbild" }
+      image: imageDataUrl
+        ? { src: imageDataUrl, alt: title.trim() || "Aktivitetsbild" }
         : undefined,
+
       source: seed?.source ?? "custom",
     };
 
@@ -214,7 +218,6 @@ export function AddActivityModal({
     <div
       className="fixed inset-0 z-50 overflow-y-auto bg-black/40 p-4"
       onMouseDown={(e) => {
-        // Backdrop click closes the modal
         if (e.target === e.currentTarget) handleClose();
       }}
       role="dialog"
@@ -254,6 +257,21 @@ export function AddActivityModal({
                   onChange={(e) => {
                     const file = e.target.files?.[0] ?? null;
                     setImageFile(file);
+
+                    if (!file) {
+                      setImageDataUrl(null);
+                      return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      const result =
+                        typeof reader.result === "string"
+                          ? reader.result
+                          : null;
+                      setImageDataUrl(result);
+                    };
+                    reader.readAsDataURL(file);
                   }}
                 />
 
@@ -291,7 +309,10 @@ export function AddActivityModal({
                 {previewSrc ? (
                   <button
                     type="button"
-                    onClick={() => setImageFile(null)}
+                    onClick={() => {
+                      setImageFile(null);
+                      setImageDataUrl(null);
+                    }}
                     className="mt-2 w-full rounded-full border border-black/10 bg-white/70 py-2 text-xs font-extrabold text-gray-800"
                   >
                     Ta bort bild
