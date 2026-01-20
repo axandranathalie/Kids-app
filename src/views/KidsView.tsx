@@ -5,11 +5,11 @@ import { OptionCard } from "../components/ui/OptionCard";
 import { AppLayout } from "../components/layout/AppLayout";
 import { allActivities } from "../data/activities";
 import { filterActivities, type KidsFilters } from "../lib/filterActivities";
+import { useWeather } from "../hook/useWeather";
+import { readParentLocation } from "../lib/parentSettingsStorage";
 
 // Icons
 import kidsIcon from "../assets/icons/kids.png";
-import rainIcon from "../assets/icons/rain.png"; // Placeholder until Weather API is implemented
-
 import age2_4 from "../assets/icons/kid2-4.png";
 import age5_7 from "../assets/icons/kid5-7.png";
 import age8_10 from "../assets/icons/kid8-10.png";
@@ -19,6 +19,13 @@ import anywhere from "../assets/icons/anywhere.png";
 import dayIcon from "../assets/icons/day.png";
 import eveningIcon from "../assets/icons/evening.png";
 import confettiIcon from "../assets/icons/confetti2.png";
+
+import sunIcon from "../assets/icons/sun.png";
+import cloudyIcon from "../assets/icons/cloudy.png";
+import rainIcon from "../assets/icons/rain.png";
+import snowyIcon from "../assets/icons/snowy.png";
+
+import { pickWeatherIconKey } from "../lib/weatherIcon";
 
 const defaultFilters: KidsFilters = {
   age: null,
@@ -32,6 +39,18 @@ export function KidsView() {
 
   // Enable CTA only when all filters are selected.
   const canSubmit = Boolean(filters.age && filters.where && filters.when);
+
+  // Read parent-selected location from localStorage (falls back to DEFAULT_LOCATION).
+  const parentLocation = useMemo(() => readParentLocation(), []);
+
+  const weatherCoords = useMemo(
+    () => ({ lat: parentLocation.lat, lon: parentLocation.lon }),
+    [parentLocation.lat, parentLocation.lon]
+  );
+
+  // Fetch current weather for the parent's location.
+  const weather = useWeather(weatherCoords);
+  const weatherSuccess = weather.status === "success" ? weather.data : null;
 
   // Keep the filtered list in sync with current filter state.
   const filteredActivities = useMemo(() => {
@@ -72,11 +91,38 @@ export function KidsView() {
             <div className="text-sm font-semibold text-gray-800">
               Vädret just nu
             </div>
-            <img
-              src={rainIcon}
-              alt=""
-              className="ml-auto mt-1 h-10 w-10 sm:h-12 sm:w-12"
-            />
+
+            {weather.status === "loading" || weather.status === "idle" ? (
+              <div className="mt-1 text-xs font-semibold text-gray-600">
+                Laddar…
+              </div>
+            ) : weather.status === "error" ? (
+              <div className="mt-1 text-xs font-semibold text-red-600">
+                Kunde inte hämta väder
+              </div>
+            ) : weatherSuccess ? (
+              <div className="mt-1 flex flex-col items-end gap-2">
+                <div className="text-xs font-semibold text-gray-700">
+                  {parentLocation.city}:{" "}
+                  {Math.round(weatherSuccess.temperatureC)}°C
+                </div>
+
+                {(() => {
+                  const key = pickWeatherIconKey(weatherSuccess);
+
+                  const iconSrc =
+                    key === "sun"
+                      ? sunIcon
+                      : key === "rain"
+                      ? rainIcon
+                      : key === "snow"
+                      ? snowyIcon
+                      : cloudyIcon;
+
+                  return <img src={iconSrc} alt="" className="h-17 w-17" />;
+                })()}
+              </div>
+            ) : null}
           </div>
 
           <div className="col-span-2 flex justify-center sm:col-span-1 sm:col-start-2">
