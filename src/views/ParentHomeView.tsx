@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, ChevronDown } from "lucide-react";
 import { AddActivityModal } from "../components/parent/AddActivityModal";
 
 import { allActivities } from "../data/activities";
@@ -10,6 +10,11 @@ import {
   readCustomActivities,
   writeCustomActivities,
 } from "../lib/customActivitiesStorage";
+import { presetCities } from "../data/presetCities";
+import {
+  readSelectedCityId,
+  writeSelectedCityId,
+} from "../lib/weatherCityStorage";
 
 // LocalStorage key for hidden activities (kids mode visibility)
 const HIDDEN_KEY = "kidsapp_hidden_activity_ids";
@@ -143,6 +148,10 @@ export function ParentHomeView() {
   );
 
   const totalCount = activities.length;
+  // Preset city selection (stored in LocalStorage, used for weather API)
+  const [selectedCityId, setSelectedCityId] = useState(() =>
+    readSelectedCityId()
+  );
 
   const visibleCount = useMemo(() => {
     let visible = 0;
@@ -198,10 +207,43 @@ export function ParentHomeView() {
           </div>
         </div>
 
+        <div className="mt-4 rounded-2xl bg-white/60 px-4 py-3 shadow-sm border border-black/10">
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-sm font-extrabold text-gray-900">
+              Välj stad
+            </div>
+
+            <div className="relative w-44 sm:w-56">
+              <select
+                value={selectedCityId}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  setSelectedCityId(next);
+                  writeSelectedCityId(next);
+                }}
+                aria-label="Välj väderstad"
+                className="w-full appearance-none rounded-xl border border-black/10 bg-white/70 pl-3 pr-10 py-2 text-sm font-semibold text-gray-900"
+              >
+                {[...presetCities]
+                  .sort((a, b) => a.name.localeCompare(b.name, "sv"))
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+              </select>
+
+              <ChevronDown
+                className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-700"
+                aria-hidden="true"
+              />
+            </div>
+          </div>
+        </div>
+
         <button
           type="button"
           onClick={() => {
-            // Ensure "add" mode (no seed) when creating a new activity.
             setEditingActivity(null);
             setIsAddOpen(true);
           }}
