@@ -6,7 +6,8 @@ import { AppLayout } from "../components/layout/AppLayout";
 import { allActivities } from "../data/activities";
 import { filterActivities, type KidsFilters } from "../lib/filterActivities";
 import { useWeather } from "../hook/useWeather";
-import { readParentLocation } from "../lib/parentSettingsStorage";
+import { getSelectedCity } from "../lib/weatherCityStorage";
+
 
 // Icons
 import kidsIcon from "../assets/icons/kids.png";
@@ -40,17 +41,18 @@ export function KidsView() {
   // Enable CTA only when all filters are selected.
   const canSubmit = Boolean(filters.age && filters.where && filters.when);
 
-  // Read parent-selected location from localStorage (falls back to DEFAULT_LOCATION).
-  const parentLocation = useMemo(() => readParentLocation(), []);
+  // Read selected city from localStorage (preset cities).
+const selectedCity = useMemo(() => getSelectedCity(), []);
 
-  const weatherCoords = useMemo(
-    () => ({ lat: parentLocation.lat, lon: parentLocation.lon }),
-    [parentLocation.lat, parentLocation.lon]
-  );
+const weatherCoords = useMemo(
+  () => ({ lat: selectedCity.lat, lon: selectedCity.lon }),
+  [selectedCity.lat, selectedCity.lon]
+);
 
-  // Fetch current weather for the parent's location.
-  const weather = useWeather(weatherCoords);
-  const weatherSuccess = weather.status === "success" ? weather.data : null;
+// Fetch current weather for the selected city.
+const weather = useWeather(weatherCoords);
+const weatherSuccess = weather.status === "success" ? weather.data : null;
+
 
   // Keep the filtered list in sync with current filter state.
   const filteredActivities = useMemo(() => {
@@ -102,10 +104,10 @@ export function KidsView() {
               </div>
             ) : weatherSuccess ? (
               <div className="mt-1 flex flex-col items-end gap-2">
-                <div className="text-xs font-semibold text-gray-700">
-                  {parentLocation.city}:{" "}
-                  {Math.round(weatherSuccess.temperatureC)}°C
-                </div>
+<div className="text-xs font-semibold text-gray-700">
+  {selectedCity.name}: {Math.round(weatherSuccess.temperatureC)}°C
+</div>
+
 
                 {(() => {
                   const key = pickWeatherIconKey(weatherSuccess);
