@@ -3,6 +3,8 @@ import { useEffect, useMemo } from "react";
 import type { Activity } from "../types/activity";
 import { activityImageByFile } from "../lib/activityImages";
 import { allActivities } from "../data/activities";
+import { readCustomActivities } from "../lib/customActivitiesStorage";
+import { readHiddenActivityIds } from "../lib/hiddenActivitiesStorage";
 import { filterActivities, type KidsFilters } from "../lib/filterActivities";
 import confettiIcon from "../assets/icons/confetti1.png";
 import refreshIcon from "../assets/icons/refresh.png";
@@ -14,6 +16,10 @@ type LocationState = {
 };
 
 function getActivityImageUrl(activity: Activity): string | undefined {
+  // Custom activities may store an image as a direct URL (data/blob).
+  if (activity.image?.src) return activity.image.src;
+
+  // Base activities use an "image.file" key mapped to an imported asset.
   const file = activity.image?.file;
   if (!file) return undefined;
 
@@ -28,14 +34,23 @@ export function ActivitySuggestionView() {
   const activity = state?.activity;
   const filters = state?.filters;
 
+  const hiddenIds = useMemo(() => readHiddenActivityIds(), []);
+  const customActivities = useMemo(() => readCustomActivities(), []);
+
   const filteredActivities = useMemo(() => {
     if (!filters) return [];
-    return filterActivities(allActivities, filters);
-  }, [filters]);
+
+    // Parent settings: include custom activities and exclude hidden ones.
+    const available = [...customActivities, ...allActivities].filter(
+      (a) => !hiddenIds.has(a.id)
+    );
+
+    return filterActivities(available, filters);
+  }, [filters, customActivities, hiddenIds]);
 
   useEffect(() => {
-    // If the user refreshes the page, routing state may be missing.
-    // If filters exist but the activity is missing, pick a fallback activity.
+    // Routing state can be lost on page refresh.
+    // If we still have filters, pick a fallback activity.
     if (!filters) return;
     if (activity) return;
 
@@ -90,8 +105,6 @@ export function ActivitySuggestionView() {
         </div>
       );
     }
-
-    // Navigation state update will happen in the effect above.
     return null;
   }
 

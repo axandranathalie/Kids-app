@@ -7,7 +7,8 @@ import { allActivities } from "../data/activities";
 import { filterActivities, type KidsFilters } from "../lib/filterActivities";
 import { useWeather } from "../hook/useWeather";
 import { getSelectedCity } from "../lib/weatherCityStorage";
-
+import { readCustomActivities } from "../lib/customActivitiesStorage";
+import { readHiddenActivityIds } from "../lib/hiddenActivitiesStorage";
 
 // Icons
 import kidsIcon from "../assets/icons/kids.png";
@@ -42,22 +43,27 @@ export function KidsView() {
   const canSubmit = Boolean(filters.age && filters.where && filters.when);
 
   // Read selected city from localStorage (preset cities).
-const selectedCity = useMemo(() => getSelectedCity(), []);
+  const selectedCity = useMemo(() => getSelectedCity(), []);
 
-const weatherCoords = useMemo(
-  () => ({ lat: selectedCity.lat, lon: selectedCity.lon }),
-  [selectedCity.lat, selectedCity.lon]
-);
+  const weatherCoords = useMemo(
+    () => ({ lat: selectedCity.lat, lon: selectedCity.lon }),
+    [selectedCity.lat, selectedCity.lon]
+  );
 
-// Fetch current weather for the selected city.
-const weather = useWeather(weatherCoords);
-const weatherSuccess = weather.status === "success" ? weather.data : null;
+  const weather = useWeather(weatherCoords);
+  const weatherSuccess = weather.status === "success" ? weather.data : null;
 
+  const hiddenIds = useMemo(() => readHiddenActivityIds(), []);
+  const customActivities = useMemo(() => readCustomActivities(), []);
 
-  // Keep the filtered list in sync with current filter state.
+  const availableActivities = useMemo(() => {
+    const combined = [...customActivities, ...allActivities];
+    return combined.filter((a) => !hiddenIds.has(a.id));
+  }, [customActivities, hiddenIds]);
+
   const filteredActivities = useMemo(() => {
-    return filterActivities(allActivities, filters);
-  }, [filters]);
+    return filterActivities(availableActivities, filters);
+  }, [availableActivities, filters]);
 
   const hasResults = filteredActivities.length > 0;
 
@@ -104,10 +110,10 @@ const weatherSuccess = weather.status === "success" ? weather.data : null;
               </div>
             ) : weatherSuccess ? (
               <div className="mt-1 flex flex-col items-end gap-2">
-<div className="text-xs font-semibold text-gray-700">
-  {selectedCity.name}: {Math.round(weatherSuccess.temperatureC)}°C
-</div>
-
+                <div className="text-xs font-semibold text-gray-700">
+                  {selectedCity.name}: {Math.round(weatherSuccess.temperatureC)}
+                  °C
+                </div>
 
                 {(() => {
                   const key = pickWeatherIconKey(weatherSuccess);
