@@ -15,27 +15,10 @@ import {
   readSelectedCityId,
   writeSelectedCityId,
 } from "../lib/weatherCityStorage";
-
-// LocalStorage key for hidden activities (kids mode visibility)
-const HIDDEN_KEY = "kidsapp_hidden_activity_ids";
-
-function readHiddenIds(): Set<string> {
-  try {
-    const raw = localStorage.getItem(HIDDEN_KEY);
-    if (!raw) return new Set();
-
-    const arr: unknown = JSON.parse(raw);
-    if (!Array.isArray(arr)) return new Set();
-
-    return new Set(arr.filter((x): x is string => typeof x === "string"));
-  } catch {
-    return new Set();
-  }
-}
-
-function writeHiddenIds(ids: Set<string>) {
-  localStorage.setItem(HIDDEN_KEY, JSON.stringify(Array.from(ids)));
-}
+import {
+  readHiddenActivityIds,
+  writeHiddenActivityIds,
+} from "../lib/hiddenActivitiesStorage";
 
 function isHidden(activityId: string, hiddenIds: Set<string>): boolean {
   return hiddenIds.has(activityId);
@@ -123,32 +106,25 @@ function Switch({ checked, onChange, disabled, label }: SwitchProps) {
     </button>
   );
 }
-
 export function ParentHomeView() {
-  // Hidden ids are stored as a Set for fast lookups (O(1)).
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(() =>
-    readHiddenIds()
+    readHiddenActivityIds()
   );
 
-  // One modal handles both "add" and "edit".
   const [isAddOpen, setIsAddOpen] = useState(false);
 
-  // Custom activities are persisted in LocalStorage.
   const [customActivities, setCustomActivities] = useState<Activity[]>(() =>
     readCustomActivities()
   );
 
-  // When set, the modal is in "edit" mode and gets pre-filled via initialActivity.
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
 
-  // Build the view list: custom first, then base.
   const activities = useMemo(
     () => [...customActivities, ...allActivities],
     [customActivities]
   );
 
   const totalCount = activities.length;
-  // Preset city selection (stored in LocalStorage, used for weather API)
   const [selectedCityId, setSelectedCityId] = useState(() =>
     readSelectedCityId()
   );
@@ -162,16 +138,40 @@ export function ParentHomeView() {
   }, [activities, hiddenIds]);
 
   const toggleVisibility = (activityId: string, makeVisible: boolean) => {
-    // Persist hidden ids to LocalStorage so kids mode can respect it later.
     setHiddenIds((prev) => {
       const next = new Set(prev);
 
       if (makeVisible) next.delete(activityId);
       else next.add(activityId);
 
-      writeHiddenIds(next);
+      writeHiddenActivityIds(next);
       return next;
     });
+  };
+
+  const deleteCustomActivity = (activityId: string) => {
+    const ok = window.confirm("Vill du ta bort aktiviteten?");
+    if (!ok) return;
+
+    setCustomActivities((prev) => {
+      const next = prev.filter((a) => a.id !== activityId);
+      writeCustomActivities(next);
+      return next;
+    });
+
+    setHiddenIds((prev) => {
+      if (!prev.has(activityId)) return prev;
+      const next = new Set(prev);
+      next.delete(activityId);
+      writeHiddenActivityIds(next);
+      return next;
+    });
+
+    // Reset modal if the edited activity was deleted.
+    if (editingActivity?.id === activityId) {
+      setIsAddOpen(false);
+      setEditingActivity(null);
+    }
   };
 
   return (
@@ -312,18 +312,27 @@ export function ParentHomeView() {
                   </div>
 
                   <div className="flex items-center gap-3">
-                    {/* Only custom activities are editable (base content stays read-only). */}
                     {activity.source === "custom" ? (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditingActivity(activity);
-                          setIsAddOpen(true);
-                        }}
-                        className="rounded-full border border-black/10 bg-white/70 px-3 py-2 text-xs font-extrabold text-gray-800"
-                      >
-                        Redigera
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingActivity(activity);
+                            setIsAddOpen(true);
+                          }}
+                          className="rounded-full border border-black/10 bg-white/70 px-3 py-2 text-xs font-extrabold text-gray-800"
+                        >
+                          Redigera
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => deleteCustomActivity(activity.id)}
+                          className="rounded-full border border-red-200 bg-red-50/80 px-3 py-2 text-xs font-extrabold text-red-700 hover:bg-red-100"
+                        >
+                          Radera
+                        </button>
+                      </div>
                     ) : null}
 
                     <div className="grid h-9 w-9 place-items-center rounded-full bg-white/70 border border-black/10">
