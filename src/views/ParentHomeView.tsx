@@ -49,8 +49,6 @@ function getWhenLabel(a: Activity): string {
 }
 
 function resolveActivityImageSrc(activity: Activity): string | undefined {
-  // Custom activities can have image.src (blob/data URL from upload / edit),
-  // while base activities typically rely on image.file resolved via getActivityImageUrl().
   return activity.image?.src ?? getActivityImageUrl(activity);
 }
 
@@ -108,25 +106,25 @@ function Switch({ checked, onChange, disabled, label }: SwitchProps) {
 }
 export function ParentHomeView() {
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(() =>
-    readHiddenActivityIds()
+    readHiddenActivityIds(),
   );
 
   const [isAddOpen, setIsAddOpen] = useState(false);
 
   const [customActivities, setCustomActivities] = useState<Activity[]>(() =>
-    readCustomActivities()
+    readCustomActivities(),
   );
 
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
 
   const activities = useMemo(
     () => [...customActivities, ...allActivities],
-    [customActivities]
+    [customActivities],
   );
 
   const totalCount = activities.length;
   const [selectedCityId, setSelectedCityId] = useState(() =>
-    readSelectedCityId()
+    readSelectedCityId(),
   );
 
   const visibleCount = useMemo(() => {
@@ -167,12 +165,17 @@ export function ParentHomeView() {
       return next;
     });
 
-    // Reset modal if the edited activity was deleted.
     if (editingActivity?.id === activityId) {
       setIsAddOpen(false);
       setEditingActivity(null);
     }
   };
+
+  // Load a few images eagerly on mobile to avoid “blank thumbnails” during fast scroll.
+  const eagerCount = useMemo(() => {
+    const isMobile = window.matchMedia("(max-width: 640px)").matches;
+    return isMobile ? 18 : 12;
+  }, []);
 
   return (
     <main className="min-h-dvh bg-[#fbf7ea] p-6 font-kids">
@@ -261,27 +264,35 @@ export function ParentHomeView() {
         </h2>
 
         <ul className="mt-4 space-y-3">
-          {activities.map((activity) => {
+          {activities.map((activity, index) => {
             const imgUrl = resolveActivityImageSrc(activity);
             const hidden = isHidden(activity.id, hiddenIds);
+            const isCustom = activity.source === "custom";
+            const shouldEagerLoad = isCustom || index < eagerCount;
 
             return (
               <li
                 key={activity.id}
-                className="rounded-2xl bg-white/60 p-4 shadow-sm border border-black/10"
+                className="rounded-2xl border border-black/10 bg-white p-4"
               >
                 <div className="flex items-center gap-4">
-                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-black/10 bg-white/60">
+                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-black/10 bg-white">
                     {imgUrl ? (
                       <img
                         src={imgUrl}
-                        alt={activity.image?.alt ?? activity.title}
+                        alt={
+                          activity.image?.alt ||
+                          activity.title ||
+                          "Aktivitetsbild"
+                        }
                         className="h-full w-full object-cover"
-                        loading="lazy"
+                        loading={shouldEagerLoad ? "eager" : "lazy"}
+                        decoding="async"
+                        fetchPriority={shouldEagerLoad ? "high" : "auto"}
                       />
                     ) : (
                       <div className="grid h-full w-full place-items-center text-[10px] font-semibold text-gray-500">
-                        No image
+                        Ingen bild
                       </div>
                     )}
                   </div>
@@ -335,7 +346,7 @@ export function ParentHomeView() {
                       </div>
                     ) : null}
 
-                    <div className="grid h-9 w-9 place-items-center rounded-full bg-white/70 border border-black/10">
+                    <div className="grid h-9 w-9 place-items-center rounded-full border border-black/10 bg-white/70">
                       {hidden ? (
                         <EyeOff className="h-5 w-5 text-gray-700" />
                       ) : (
@@ -348,7 +359,7 @@ export function ParentHomeView() {
                       onChange={(nextVisible) =>
                         toggleVisibility(activity.id, nextVisible)
                       }
-                      label="Toggle visibility"
+                      label={hidden ? "Visa aktivitet" : "Dölj aktivitet"}
                     />
                   </div>
                 </div>
@@ -359,7 +370,7 @@ export function ParentHomeView() {
       </section>
 
       <AddActivityModal
-        // Key forces a remount so the modal always re-initializes cleanly between add/edit/open states.
+        // Force remount to reset modal state between add/edit.
         key={(editingActivity?.id ?? "new") + "-" + String(isAddOpen)}
         open={isAddOpen}
         initialActivity={editingActivity}
@@ -373,11 +384,10 @@ export function ParentHomeView() {
               ? prev.map((a) =>
                   a.id === editingActivity.id
                     ? { ...activityFromModal, id: a.id }
-                    : a
+                    : a,
                 )
               : [activityFromModal, ...prev];
 
-            // Persist changes so the list survives reloads.
             writeCustomActivities(next);
 
             return next;
