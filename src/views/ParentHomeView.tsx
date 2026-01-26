@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Eye, EyeOff, ChevronDown } from "lucide-react";
 import { AddActivityModal } from "../components/parent/AddActivityModal";
@@ -123,9 +123,31 @@ export function ParentHomeView() {
   );
 
   const totalCount = activities.length;
+
   const [selectedCityId, setSelectedCityId] = useState(() =>
     readSelectedCityId(),
   );
+
+  const [isCityPickerOpen, setIsCityPickerOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isCityPickerOpen) return;
+
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [isCityPickerOpen]);
+
+  const sortedCities = useMemo(
+    () => [...presetCities].sort((a, b) => a.name.localeCompare(b.name, "sv")),
+    [],
+  );
+
+  const selectedCityName =
+    sortedCities.find((c) => c.id === selectedCityId)?.name ?? "Välj stad";
 
   const visibleCount = useMemo(() => {
     let visible = 0;
@@ -171,7 +193,6 @@ export function ParentHomeView() {
     }
   };
 
-  // Load a few images eagerly on mobile to avoid “blank thumbnails” during fast scroll.
   const eagerCount = useMemo(() => {
     const isMobile = window.matchMedia("(max-width: 640px)").matches;
     return isMobile ? 18 : 12;
@@ -217,24 +238,15 @@ export function ParentHomeView() {
             </div>
 
             <div className="relative w-44 sm:w-56">
-              <select
-                value={selectedCityId}
-                onChange={(e) => {
-                  const next = e.target.value;
-                  setSelectedCityId(next);
-                  writeSelectedCityId(next);
-                }}
-                aria-label="Välj väderstad"
-                className="w-full appearance-none rounded-xl border border-black/10 bg-white/70 pl-3 pr-10 py-2 text-sm font-semibold text-gray-900"
+              <button
+                type="button"
+                onClick={() => setIsCityPickerOpen(true)}
+                aria-haspopup="dialog"
+                aria-expanded={isCityPickerOpen}
+                className="w-full rounded-xl border border-black/10 bg-white/70 pl-3 pr-10 py-2 text-left text-sm font-semibold text-gray-900"
               >
-                {[...presetCities]
-                  .sort((a, b) => a.name.localeCompare(b.name, "sv"))
-                  .map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-              </select>
+                {selectedCityName}
+              </button>
 
               <ChevronDown
                 className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-700"
@@ -243,6 +255,77 @@ export function ParentHomeView() {
             </div>
           </div>
         </div>
+
+        {isCityPickerOpen ? (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Välj väderstad"
+            className="fixed inset-0 z-50"
+          >
+            <button
+              type="button"
+              className="absolute inset-0 bg-black/30"
+              onClick={() => setIsCityPickerOpen(false)}
+              aria-label="Stäng"
+            />
+
+            <div
+              className={[
+                "fixed inset-0",
+                "flex justify-center",
+                "items-end sm:items-center",
+                "px-3 sm:px-6",
+                "pb-[max(12px,env(safe-area-inset-bottom))] sm:pb-0",
+                "pt-3 sm:pt-0",
+              ].join(" ")}
+            >
+              <div className="w-full max-w-md rounded-3xl bg-white p-4 shadow-xl">
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="text-base font-extrabold text-gray-900">
+                    Välj stad
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsCityPickerOpen(false)}
+                    className="rounded-full border border-black/10 bg-white px-3 py-2 text-sm font-semibold"
+                  >
+                    Stäng
+                  </button>
+                </div>
+
+                <div className="max-h-[60vh] overflow-auto rounded-2xl border border-black/10">
+                  {sortedCities.map((c) => {
+                    const isSelected = c.id === selectedCityId;
+
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedCityId(c.id);
+                          writeSelectedCityId(c.id);
+                          setIsCityPickerOpen(false);
+                        }}
+                        className={[
+                          "w-full px-4 py-3 text-left text-sm font-semibold",
+                          "border-b border-black/5 last:border-b-0",
+                          isSelected
+                            ? "bg-emerald-50 text-gray-900"
+                            : "bg-white text-gray-800 hover:bg-black/5",
+                        ].join(" ")}
+                      >
+                        {c.name}
+                        {isSelected ? " ✓" : ""}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
 
         <button
           type="button"
@@ -275,8 +358,14 @@ export function ParentHomeView() {
                 key={activity.id}
                 className="rounded-2xl border border-black/10 bg-white p-4"
               >
-                <div className="flex items-center gap-4">
-                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-black/10 bg-white">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                  <div
+                    className={[
+                      "shrink-0 overflow-hidden rounded-2xl border border-black/10 bg-white",
+                      "h-20 w-20 sm:h-16 sm:w-16",
+                      "mx-auto sm:mx-0",
+                    ].join(" ")}
+                  >
                     {imgUrl ? (
                       <img
                         src={imgUrl}
@@ -296,71 +385,95 @@ export function ParentHomeView() {
                       </div>
                     )}
                   </div>
-
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-base font-extrabold text-gray-900">
-                      {activity.title}
-                    </div>
-
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
-                      {getAgeLabels(activity).map((label) => (
-                        <Chip
-                          key={`${activity.id}-age-${label}`}
-                          className="bg-sky-50/80 border-sky-200"
-                        >
-                          {label}
-                        </Chip>
-                      ))}
-
-                      <Chip className="bg-violet-50/80 border-violet-200">
-                        {getWhereLabel(activity)}
-                      </Chip>
-
-                      <Chip className="bg-emerald-50/80 border-emerald-200">
-                        {getWhenLabel(activity)}
-                      </Chip>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    {activity.source === "custom" ? (
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEditingActivity(activity);
-                            setIsAddOpen(true);
-                          }}
-                          className="rounded-full border border-black/10 bg-white/70 px-3 py-2 text-xs font-extrabold text-gray-800"
-                        >
-                          Redigera
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => deleteCustomActivity(activity.id)}
-                          className="rounded-full border border-red-200 bg-red-50/80 px-3 py-2 text-xs font-extrabold text-red-700 hover:bg-red-100"
-                        >
-                          Radera
-                        </button>
+                  <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <div className="truncate text-base font-extrabold text-gray-900 text-center sm:text-left">
+                        {activity.title}
                       </div>
-                    ) : null}
 
-                    <div className="grid h-9 w-9 place-items-center rounded-full border border-black/10 bg-white/70">
-                      {hidden ? (
-                        <EyeOff className="h-5 w-5 text-gray-700" />
-                      ) : (
-                        <Eye className="h-5 w-5 text-gray-700" />
-                      )}
+                      <div className="mt-2 flex flex-wrap items-center gap-2 justify-center sm:justify-start">
+                        {getAgeLabels(activity).map((label) => (
+                          <Chip
+                            key={`${activity.id}-age-${label}`}
+                            className="bg-sky-50/80 border-sky-200"
+                          >
+                            {label}
+                          </Chip>
+                        ))}
+
+                        <Chip className="bg-violet-50/80 border-violet-200">
+                          {getWhereLabel(activity)}
+                        </Chip>
+
+                        <Chip className="bg-emerald-50/80 border-emerald-200">
+                          {getWhenLabel(activity)}
+                        </Chip>
+                      </div>
+
+                      {isCustom ? (
+                        <div className="mt-2 flex flex-wrap items-center gap-2 justify-center sm:hidden">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingActivity(activity);
+                              setIsAddOpen(true);
+                            }}
+                            className="rounded-full border border-black/10 bg-white/70 px-3 py-2 text-xs font-extrabold text-gray-800"
+                          >
+                            Redigera
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => deleteCustomActivity(activity.id)}
+                            className="rounded-full border border-red-200 bg-red-50/80 px-3 py-2 text-xs font-extrabold text-red-700 hover:bg-red-100"
+                          >
+                            Radera
+                          </button>
+                        </div>
+                      ) : null}
                     </div>
 
-                    <Switch
-                      checked={!hidden}
-                      onChange={(nextVisible) =>
-                        toggleVisibility(activity.id, nextVisible)
-                      }
-                      label={hidden ? "Visa aktivitet" : "Dölj aktivitet"}
-                    />
+                    <div className="flex items-center gap-3 justify-center sm:justify-end">
+                      {isCustom ? (
+                        <div className="hidden sm:flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingActivity(activity);
+                              setIsAddOpen(true);
+                            }}
+                            className="rounded-full border border-black/10 bg-white/70 px-3 py-2 text-xs font-extrabold text-gray-800"
+                          >
+                            Redigera
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => deleteCustomActivity(activity.id)}
+                            className="rounded-full border border-red-200 bg-red-50/80 px-3 py-2 text-xs font-extrabold text-red-700 hover:bg-red-100"
+                          >
+                            Radera
+                          </button>
+                        </div>
+                      ) : null}
+
+                      <div className="grid h-9 w-9 place-items-center rounded-full border border-black/10 bg-white/70">
+                        {hidden ? (
+                          <EyeOff className="h-5 w-5 text-gray-700" />
+                        ) : (
+                          <Eye className="h-5 w-5 text-gray-700" />
+                        )}
+                      </div>
+
+                      <Switch
+                        checked={!hidden}
+                        onChange={(nextVisible) =>
+                          toggleVisibility(activity.id, nextVisible)
+                        }
+                        label={hidden ? "Visa aktivitet" : "Dölj aktivitet"}
+                      />
+                    </div>
                   </div>
                 </div>
               </li>
@@ -370,7 +483,7 @@ export function ParentHomeView() {
       </section>
 
       <AddActivityModal
-        // Force remount to reset modal state between add/edit.
+        // Force remount to reset modal state.
         key={(editingActivity?.id ?? "new") + "-" + String(isAddOpen)}
         open={isAddOpen}
         initialActivity={editingActivity}

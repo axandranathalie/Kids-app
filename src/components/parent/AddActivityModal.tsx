@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { X } from "lucide-react";
+import { X, ChevronDown } from "lucide-react";
 import type { Activity, AgeGroup } from "../../types/activity";
 
 import uploadImageIcon from "../../assets/icons/image.png";
@@ -68,23 +68,43 @@ export function AddActivityModal({
   const [title, setTitle] = useState(() => seed?.title ?? "");
   const [description, setDescription] = useState(() => seed?.description ?? "");
   const [steps, setSteps] = useState<string[]>(() =>
-    seed?.steps?.length ? seed.steps : [""]
+    seed?.steps?.length ? seed.steps : [""],
   );
   const [ageGroups, setAgeGroups] = useState<AgeGroup[]>(
-    () => seed?.ageGroups ?? []
+    () => seed?.ageGroups ?? [],
   );
   const [where, setWhere] = useState<WhereValue>(
-    () => seed?.weather ?? "valfritt"
+    () => seed?.weather ?? "valfritt",
   );
   const [when, setWhen] = useState<WhenValue>(
-    () => seed?.timeOfDay ?? "valfritt"
+    () => seed?.timeOfDay ?? "valfritt",
   );
+
+  const [isWhereOpen, setIsWhereOpen] = useState(false);
+  const [isWhenOpen, setIsWhenOpen] = useState(false);
+
+  const whereOptions = [
+    { value: "inomhus", label: "Inomhus" },
+    { value: "utomhus", label: "Utomhus" },
+    { value: "valfritt", label: "Var som helst" },
+  ] as const;
+
+  const whenOptions = [
+    { value: "morgon", label: "Morgon" },
+    { value: "eftermiddag", label: "Dag" },
+    { value: "kväll", label: "Kväll" },
+    { value: "valfritt", label: "När som helst" },
+  ] as const;
+
+  const whereLabel =
+    whereOptions.find((o) => o.value === where)?.label ?? "Välj";
+  const whenLabel = whenOptions.find((o) => o.value === when)?.label ?? "Välj";
 
   const [imageFile, setImageFile] = useState<File | null>(null);
 
   // Persisted image (Data URL) so it survives refresh via LocalStorage
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(
-    () => seed?.image?.src ?? null
+    () => seed?.image?.src ?? null,
   );
 
   // Temporary preview URL for immediate feedback (does not survive refresh)
@@ -127,7 +147,7 @@ export function AddActivityModal({
         when,
         hasImage: Boolean(previewSrc),
       }),
-    [title, description, steps, ageGroups, where, when, previewSrc]
+    [title, description, steps, ageGroups, where, when, previewSrc],
   );
 
   const canSubmit = Object.keys(errors).length === 0;
@@ -166,7 +186,7 @@ export function AddActivityModal({
 
   const toggleAge = (g: AgeGroup) => {
     setAgeGroups((prev) =>
-      prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]
+      prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g],
     );
   };
 
@@ -216,7 +236,7 @@ export function AddActivityModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 overflow-y-auto bg-black/40 p-4"
+      className="fixed inset-0 z-50 bg-black/40 p-4"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) handleClose();
       }}
@@ -224,8 +244,8 @@ export function AddActivityModal({
       aria-modal="true"
       aria-label={seed ? "Redigera aktivitet" : "Lägg till ny aktivitet"}
     >
-      <div className="mx-auto w-full max-w-lg rounded-2xl bg-white shadow-xl">
-        <div className="sticky top-0 z-10 flex items-center justify-between rounded-t-2xl bg-white p-5">
+      <div className="mx-auto w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-xl">
+        <div className="sticky top-0 z-10 flex items-center justify-between bg-white p-5">
           <div className="text-lg font-extrabold text-gray-900">
             {seed ? "Redigera aktivitet" : "Lägg till ny aktivitet"}
           </div>
@@ -242,7 +262,7 @@ export function AddActivityModal({
 
         <div className="max-h-[calc(100dvh-140px)] overflow-y-auto p-5">
           <div className="space-y-4">
-            {/* Image */}
+            {/* Image upload */}
             <div>
               <label className="text-sm font-semibold text-gray-800">
                 Ladda upp bild
@@ -334,7 +354,7 @@ export function AddActivityModal({
                 className={cn(
                   "mt-1 w-full rounded-xl border bg-white px-3 py-2 text-sm",
                   "border-black/10 focus:outline-none focus:ring-2 focus:ring-black/10",
-                  showError("title") && errors.title && "border-red-400"
+                  showError("title") && errors.title && "border-red-400",
                 )}
               />
               {showError("title") && errors.title ? (
@@ -360,7 +380,7 @@ export function AddActivityModal({
                   "border-black/10 focus:outline-none focus:ring-2 focus:ring-black/10",
                   showError("description") &&
                     errors.description &&
-                    "border-red-400"
+                    "border-red-400",
                 )}
               />
               {showError("description") && errors.description ? (
@@ -397,7 +417,7 @@ export function AddActivityModal({
                       className={cn(
                         "w-full rounded-xl border bg-white px-3 py-2 text-sm",
                         "border-black/10 focus:outline-none focus:ring-2 focus:ring-black/10",
-                        showError("steps") && errors.steps && "border-red-400"
+                        showError("steps") && errors.steps && "border-red-400",
                       )}
                     />
 
@@ -409,7 +429,7 @@ export function AddActivityModal({
                         "grid h-9 w-9 place-items-center rounded-full border border-black/10",
                         steps.length <= 1
                           ? "bg-gray-100 text-gray-400"
-                          : "bg-white/70 text-gray-700"
+                          : "bg-white/70 text-gray-700",
                       )}
                       aria-label="Ta bort steg"
                       title="Ta bort steg"
@@ -454,7 +474,7 @@ export function AddActivityModal({
                         showError("ageGroups") &&
                           errors.ageGroups &&
                           !active &&
-                          "border-red-400"
+                          "border-red-400",
                       )}
                     >
                       {label}
@@ -476,20 +496,27 @@ export function AddActivityModal({
                 <label className="text-sm font-semibold text-gray-800">
                   Var
                 </label>
-                <select
-                  value={where}
-                  onChange={(e) => setWhere(e.target.value as WhereValue)}
+                <button
+                  type="button"
+                  onClick={() => setIsWhereOpen(true)}
                   onBlur={() => setTouched((p) => ({ ...p, where: true }))}
+                  aria-haspopup="dialog"
+                  aria-expanded={isWhereOpen}
                   className={cn(
-                    "mt-1 w-full rounded-xl border bg-white px-3 py-2 text-sm",
+                    "mt-1 w-full rounded-xl border bg-white px-3 py-2 text-left text-sm font-semibold",
                     "border-black/10 focus:outline-none focus:ring-2 focus:ring-black/10",
-                    showError("where") && errors.where && "border-red-400"
+                    showError("where") && errors.where && "border-red-400",
                   )}
                 >
-                  <option value="inomhus">Inomhus</option>
-                  <option value="utomhus">Utomhus</option>
-                  <option value="valfritt">Var som helst</option>
-                </select>
+                  <span className="flex items-center justify-between">
+                    <span className="text-gray-900">{whereLabel}</span>
+                    <ChevronDown
+                      className="h-4 w-4 text-gray-700"
+                      aria-hidden="true"
+                    />
+                  </span>
+                </button>
+
                 {showError("where") && errors.where ? (
                   <p className="mt-1 text-xs font-semibold text-red-600">
                     {errors.where}
@@ -501,20 +528,27 @@ export function AddActivityModal({
                 <label className="text-sm font-semibold text-gray-800">
                   När
                 </label>
-                <select
-                  value={when}
-                  onChange={(e) => setWhen(e.target.value as WhenValue)}
+                <button
+                  type="button"
+                  onClick={() => setIsWhenOpen(true)}
                   onBlur={() => setTouched((p) => ({ ...p, when: true }))}
+                  aria-haspopup="dialog"
+                  aria-expanded={isWhenOpen}
                   className={cn(
-                    "mt-1 w-full rounded-xl border bg-white px-3 py-2 text-sm",
+                    "mt-1 w-full rounded-xl border bg-white px-3 py-2 text-left text-sm font-semibold",
                     "border-black/10 focus:outline-none focus:ring-2 focus:ring-black/10",
-                    showError("when") && errors.when && "border-red-400"
+                    showError("when") && errors.when && "border-red-400",
                   )}
                 >
-                  <option value="eftermiddag">Dag</option>
-                  <option value="kväll">Kväll</option>
-                  <option value="valfritt">När som helst</option>
-                </select>
+                  <span className="flex items-center justify-between">
+                    <span className="text-gray-900">{whenLabel}</span>
+                    <ChevronDown
+                      className="h-4 w-4 text-gray-700"
+                      aria-hidden="true"
+                    />
+                  </span>
+                </button>
+
                 {showError("when") && errors.when ? (
                   <p className="mt-1 text-xs font-semibold text-red-600">
                     {errors.when}
@@ -522,6 +556,144 @@ export function AddActivityModal({
                 ) : null}
               </div>
             </div>
+
+            {/* Where sheet */}
+            {isWhereOpen ? (
+              <div
+                className="fixed inset-0 z-60"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Välj var"
+              >
+                <button
+                  type="button"
+                  className="absolute inset-0 bg-black/30"
+                  onClick={() => setIsWhereOpen(false)}
+                  aria-label="Stäng"
+                />
+
+                <div
+                  className={[
+                    "fixed inset-0",
+                    "flex justify-center",
+                    "items-end sm:items-center",
+                    "px-3 sm:px-6",
+                    "pb-[max(12px,env(safe-area-inset-bottom))] sm:pb-0",
+                    "pt-3 sm:pt-0",
+                  ].join(" ")}
+                >
+                  <div className="w-full max-w-md rounded-3xl bg-white p-4 shadow-xl">
+                    <div className="mb-3 flex items-center justify-between">
+                      <div className="text-base font-extrabold text-gray-900">
+                        Var
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsWhereOpen(false)}
+                        className="rounded-full border border-black/10 bg-white px-3 py-2 text-sm font-semibold"
+                      >
+                        Stäng
+                      </button>
+                    </div>
+
+                    <div className="overflow-hidden rounded-2xl border border-black/10">
+                      {whereOptions.map((o) => {
+                        const isSelected = o.value === where;
+                        return (
+                          <button
+                            key={o.value}
+                            type="button"
+                            onClick={() => {
+                              setWhere(o.value as WhereValue);
+                              setIsWhereOpen(false);
+                            }}
+                            className={[
+                              "w-full px-4 py-3 text-left text-sm font-semibold",
+                              "border-b border-black/5 last:border-b-0",
+                              isSelected
+                                ? "bg-emerald-50 text-gray-900"
+                                : "bg-white text-gray-800 hover:bg-black/5",
+                            ].join(" ")}
+                          >
+                            {o.label}
+                            {isSelected ? " ✓" : ""}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
+            {/* When sheet */}
+            {isWhenOpen ? (
+              <div
+                className="fixed inset-0 z-60"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Välj när"
+              >
+                <button
+                  type="button"
+                  className="absolute inset-0 bg-black/30"
+                  onClick={() => setIsWhenOpen(false)}
+                  aria-label="Stäng"
+                />
+
+                <div
+                  className={[
+                    "fixed inset-0",
+                    "flex justify-center",
+                    "items-end sm:items-center",
+                    "px-3 sm:px-6",
+                    "pb-[max(12px,env(safe-area-inset-bottom))] sm:pb-0",
+                    "pt-3 sm:pt-0",
+                  ].join(" ")}
+                >
+                  <div className="w-full max-w-md rounded-3xl bg-white p-4 shadow-xl">
+                    <div className="mb-3 flex items-center justify-between">
+                      <div className="text-base font-extrabold text-gray-900">
+                        När
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsWhenOpen(false)}
+                        className="rounded-full border border-black/10 bg-white px-3 py-2 text-sm font-semibold"
+                      >
+                        Stäng
+                      </button>
+                    </div>
+
+                    <div className="overflow-hidden rounded-2xl border border-black/10">
+                      {whenOptions.map((o) => {
+                        const isSelected = o.value === when;
+                        return (
+                          <button
+                            key={o.value}
+                            type="button"
+                            onClick={() => {
+                              setWhen(o.value as WhenValue);
+                              setIsWhenOpen(false);
+                            }}
+                            className={[
+                              "w-full px-4 py-3 text-left text-sm font-semibold",
+                              "border-b border-black/5 last:border-b-0",
+                              isSelected
+                                ? "bg-emerald-50 text-gray-900"
+                                : "bg-white text-gray-800 hover:bg-black/5",
+                            ].join(" ")}
+                          >
+                            {o.label}
+                            {isSelected ? " ✓" : ""}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : null}
 
             {/* Actions */}
             <div className="pt-2">
@@ -534,7 +706,7 @@ export function AddActivityModal({
                   "border-2",
                   canSubmit
                     ? "bg-orange-400 text-white border-orange-500 hover:brightness-[0.98] active:scale-[0.99]"
-                    : "bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed"
+                    : "bg-gray-200 text-gray-500 border-gray-300 cursor-not-allowed",
                 )}
               >
                 {seed ? "Spara ändringar" : "+ Lägg till ny aktivitet"}
