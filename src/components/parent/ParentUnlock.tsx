@@ -6,53 +6,144 @@ type Props = {
   onSuccess: () => void;
 };
 
+const PIN_LENGTH = 4;
+
+function onlyDigits(value: string) {
+  return value.replace(/\D/g, "");
+}
+
 export function ParentUnlock({ onSuccess }: Props) {
-  const [pin, setPin] = useState<string[]>(["", "", "", ""]);
+  const [pin, setPin] = useState<string[]>(Array(PIN_LENGTH).fill(""));
   const [error, setError] = useState<string | null>(null);
 
-  // Keep refs to the 4 inputs so we can auto-advance focus (kid-friendly UX).
   const refs = useRef<Array<HTMLInputElement | null>>([]);
 
   useEffect(() => {
-    // Focus first input on mount.
     refs.current[0]?.focus();
   }, []);
 
-  const onChangeDigit = (index: number, value: string) => {
-    // Allow only one digit per box.
-    const digit = value.replace(/\D/g, "").slice(-1);
-    setError(null);
+  const focusIndex = (index: number) => {
+    refs.current[index]?.focus();
+    refs.current[index]?.select();
+  };
 
+  const clearAll = () => {
+    setPin(Array(PIN_LENGTH).fill(""));
+    setError(null);
+    focusIndex(0);
+  };
+
+  const setDigitAt = (index: number, digit: string) => {
     setPin((prev) => {
       const next = [...prev];
       next[index] = digit;
       return next;
     });
-
-    // Auto-move focus forward when a digit is entered.
-    if (digit && index < 3) refs.current[index + 1]?.focus();
   };
 
-  const onKeyDown = (
-    index: number,
-    e: React.KeyboardEvent<HTMLInputElement>
-  ) => {
-    if (e.key !== "Backspace") return;
+  const handleChange = (index: number, raw: string) => {
+    setError(null);
 
-    // If current box is empty, jump back to previous box.
-    if (!pin[index] && index > 0) {
-      refs.current[index - 1]?.focus();
+    const digits = onlyDigits(raw);
+
+    // Distribute pasted/typed digits across remaining boxes.
+    if (digits.length > 1) {
+      setPin((prev) => {
+        const next = [...prev];
+        let writeIndex = index;
+
+        for (const ch of digits) {
+          if (writeIndex >= PIN_LENGTH) break;
+          next[writeIndex] = ch;
+          writeIndex += 1;
+        }
+
+        const nextFocus = Math.min(writeIndex, PIN_LENGTH - 1);
+        queueMicrotask(() => focusIndex(nextFocus));
+        return next;
+      });
+
       return;
     }
 
-    // Otherwise clear current digit.
-    if (pin[index]) {
-      setPin((prev) => {
-        const next = [...prev];
-        next[index] = "";
-        return next;
-      });
+    const digit = digits.slice(-1);
+    setDigitAt(index, digit);
+
+    if (digit && index < PIN_LENGTH - 1) {
+      focusIndex(index + 1);
     }
+  };
+
+  const handleKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>,
+  ) => {
+    setError(null);
+
+    if (e.key === "Enter") {
+      e.preventDefault();
+      submit();
+      return;
+    }
+
+    if (e.key === "Backspace") {
+      e.preventDefault();
+
+      if (pin[index]) {
+        setDigitAt(index, "");
+        return;
+      }
+
+      if (index > 0) {
+        focusIndex(index - 1);
+        setDigitAt(index - 1, "");
+      }
+      return;
+    }
+
+    if (e.key === "Delete") {
+      e.preventDefault();
+      setDigitAt(index, "");
+      return;
+    }
+
+    if (e.key === "ArrowLeft" && index > 0) {
+      e.preventDefault();
+      focusIndex(index - 1);
+      return;
+    }
+
+    if (e.key === "ArrowRight" && index < PIN_LENGTH - 1) {
+      e.preventDefault();
+      focusIndex(index + 1);
+      return;
+    }
+  };
+
+  const handlePaste = (
+    index: number,
+    e: React.ClipboardEvent<HTMLInputElement>,
+  ) => {
+    const pasted = onlyDigits(e.clipboardData.getData("text"));
+    if (!pasted) return;
+
+    e.preventDefault();
+    setError(null);
+
+    setPin((prev) => {
+      const next = [...prev];
+      let writeIndex = index;
+
+      for (const ch of pasted) {
+        if (writeIndex >= PIN_LENGTH) break;
+        next[writeIndex] = ch;
+        writeIndex += 1;
+      }
+
+      const nextFocus = Math.min(writeIndex, PIN_LENGTH - 1);
+      queueMicrotask(() => focusIndex(nextFocus));
+      return next;
+    });
   };
 
   const submit = () => {
@@ -65,11 +156,7 @@ export function ParentUnlock({ onSuccess }: Props) {
 
     if (!verifyParentPin(pinStr)) {
       setError("Fel PIN-kod.");
-
-      // Reset PIN inputs on incorrect attempt
-      setPin(["", "", "", ""]);
-      refs.current[0]?.focus();
-
+      clearAll();
       return;
     }
 
@@ -96,11 +183,14 @@ export function ParentUnlock({ onSuccess }: Props) {
                 refs.current[i] = el;
               }}
               inputMode="numeric"
+              autoComplete="one-time-code"
               value={d}
-              onChange={(e) => onChangeDigit(i, e.target.value)}
-              onKeyDown={(e) => onKeyDown(i, e)}
+              onChange={(e) => handleChange(i, e.target.value)}
+              onKeyDown={(e) => handleKeyDown(i, e)}
+              onPaste={(e) => handlePaste(i, e)}
               className="h-14 w-14 rounded-2xl border-2 border-gray-300 bg-white text-center text-2xl font-bold"
-              aria-label={`PIN digit ${i + 1}`}
+              aria-label={`Siffra ${i + 1} av ${PIN_LENGTH} i PIN-kod`}
+              type="password"
             />
           ))}
         </div>
