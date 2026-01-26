@@ -17,7 +17,7 @@ export const BASE_ACTIVITIES: Activity[] = [
     timeOfDay: "valfritt",
     durationMinutes: 45,
     materials: ["Ingredienser", "Skål", "Slev", "Ugn eller stekpanna"],
-    image: { alt: "Barn som bakar i köket", file: "baking.jpg" },
+    image: { alt: "Barn som bakar", file: "baking.jpg" },
     source: "base",
   },
   {
@@ -34,8 +34,8 @@ export const BASE_ACTIVITIES: Activity[] = [
     weather: "inomhus",
     timeOfDay: "kväll",
     durationMinutes: 30,
-    materials: ["FILTAR", "Kuddar", "Stolar", "Ficklampa (valfritt)"],
-    image: { alt: "En mysig filtkoja", file: "blanket-fort.png" },
+    materials: ["Filtar", "Kuddar", "Stolar", "Ficklampa (valfritt)"],
+    image: { alt: "En filtkoja byggd av filtar och stolar", file: "blanket-fort.png" },
     source: "base",
   },
   {
@@ -53,7 +53,7 @@ export const BASE_ACTIVITIES: Activity[] = [
     timeOfDay: "valfritt",
     durationMinutes: 30,
     materials: ["Brädspel"],
-    image: { alt: "Ett brädspel på ett bord", file: "boardgame.jpg" },
+    image: { alt: "Ett brädspel uppdukat på ett bord", file: "boardgame.jpg" },
     source: "base",
   },
   {
@@ -71,7 +71,7 @@ export const BASE_ACTIVITIES: Activity[] = [
     timeOfDay: "eftermiddag",
     durationMinutes: 25,
     materials: ["Kuddar", "Tejp (valfritt)", "Stolar", "Rep (valfritt)"],
-    image: { alt: "En hinderbana byggd av saker hemma", file: "build-course.jpg" },
+    image: { alt: "Barn som springer genom en hinderbana", file: "build-course.jpg" },
     source: "base",
   },
   {
@@ -89,7 +89,7 @@ export const BASE_ACTIVITIES: Activity[] = [
     timeOfDay: "valfritt",
     durationMinutes: 30,
     materials: ["Papper", "Sax", "Lim", "Pennor"],
-    image: { alt: "Pysselmaterial som sax och papper", file: "craft.jpg" },
+    image: { alt: "Pysselmaterial", file: "craft.jpg" },
     source: "base",
   },
   {
@@ -107,7 +107,7 @@ export const BASE_ACTIVITIES: Activity[] = [
     timeOfDay: "valfritt",
     durationMinutes: 15,
     materials: ["Musik (mobil/högtalare)"],
-    image: { alt: "Barn som dansar", file: "dance.jpg" },
+    image: { alt: "Dansande människor", file: "dance.jpg" },
     source: "base",
   },
   {
@@ -125,7 +125,7 @@ export const BASE_ACTIVITIES: Activity[] = [
     timeOfDay: "valfritt",
     durationMinutes: 20,
     materials: ["Papper", "Pennor", "Kritor (valfritt)"],
-    image: { alt: "En teckning med färgpennor", file: "drawing.jpg" },
+    image: { alt: "En teckning som ett barn färglägger", file: "drawing.jpg" },
     source: "base",
   },
   {
@@ -143,7 +143,7 @@ export const BASE_ACTIVITIES: Activity[] = [
     timeOfDay: "eftermiddag",
     durationMinutes: 40,
     materials: ["Sköna skor", "En liten påse (valfritt)"],
-    image: { alt: "Barn som utforskar skogen", file: "forest-explorer.jpg" },
+    image: { alt: "Barn som utforskar en skogsstig", file: "forest-explorer.jpg" },
     source: "base",
   },
   {
@@ -161,7 +161,7 @@ export const BASE_ACTIVITIES: Activity[] = [
     timeOfDay: "valfritt",
     durationMinutes: 45,
     materials: ["Vattenflaska"],
-    image: { alt: "Barn som leker i skogen", file: "forest-play.jpg" },
+    image: { alt: "Barn som leker bland träd och pinnar i skogen", file: "forest-play.jpg" },
     source: "base",
   },
   {
@@ -179,7 +179,7 @@ export const BASE_ACTIVITIES: Activity[] = [
     timeOfDay: "valfritt",
     durationMinutes: 25,
     materials: ["LEGO eller byggklossar"],
-    image: { alt: "LEGO-bitar och ett bygge", file: "lego.jpg" },
+    image: { alt: "LEGO-bitar och ett påbörjat bygge", file: "lego.jpg" },
     source: "base",
   },
   {
@@ -197,7 +197,7 @@ export const BASE_ACTIVITIES: Activity[] = [
     timeOfDay: "valfritt",
     durationMinutes: 30,
     materials: ["Färg", "Pensel", "Papper", "Vatten"],
-    image: { alt: "En målning med färg", file: "painting.jpg" },
+    image: { alt: "Bild på färg och penslar", file: "painting.jpg" },
     source: "base",
   },
   {
@@ -215,7 +215,7 @@ export const BASE_ACTIVITIES: Activity[] = [
     timeOfDay: "valfritt",
     durationMinutes: 30,
     materials: ["Pussel"],
-    image: { alt: "Ett pussel på ett bord", file: "puzzle.jpg" },
+    image: { alt: "Pusselbitar utspridda på ett bord", file: "puzzle.jpg" },
     source: "base",
   },
   {
@@ -251,7 +251,7 @@ export const BASE_ACTIVITIES: Activity[] = [
     timeOfDay: "valfritt",
     durationMinutes: 30,
     materials: ["Hink", "Spade (valfritt)"],
-    image: { alt: "Lek i sanden med hink och spade", file: "sand-play.jpg" },
+    image: { alt: "Bild på sand med sandleksaker", file: "sand-play.jpg" },
     source: "base",
   },
   {
@@ -268,7 +268,7 @@ export const BASE_ACTIVITIES: Activity[] = [
     timeOfDay: "valfritt",
     durationMinutes: 35,
     materials: ["Hink", "Spade"],
-    image: { alt: "Ett sandslott på stranden", file: "sandcastle.jpg" },
+    image: { alt: "Ett sandslott byggt i sanden", file: "sandcastle.jpg" },
     source: "base",
   },
   {
@@ -286,7 +286,7 @@ export const BASE_ACTIVITIES: Activity[] = [
     timeOfDay: "valfritt",
     durationMinutes: 20,
     materials: ["Bakpulver", "Vinäger", "Glas", "Sked"],
-    image: { alt: "Ett enkelt experiment på ett bord", file: "science.jpg" },
+    image: { alt: "Ett barn sitter med ett experimentrör", file: "science.jpg" },
     source: "base",
   },
   {
@@ -304,7 +304,7 @@ export const BASE_ACTIVITIES: Activity[] = [
     timeOfDay: "eftermiddag",
     durationMinutes: 25,
     materials: ["Papper", "Penna", "En liten skatt"],
-    image: { alt: "En skattjakt med ledtrådar", file: "treasure-hunt.jpg" },
+    image: { alt: "Ledtrådar på papper till en skattjakt", file: "treasure-hunt.jpg" },
     source: "base",
   },
 ];

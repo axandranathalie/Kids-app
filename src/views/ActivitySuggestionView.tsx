@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Activity } from "../types/activity";
 import { activityImageByFile } from "../lib/activityImages";
 import { allActivities } from "../data/activities";
@@ -19,7 +19,7 @@ function getActivityImageUrl(activity: Activity): string | undefined {
   // Custom activities may store an image as a direct URL (data/blob).
   if (activity.image?.src) return activity.image.src;
 
-  // Base activities use an "image.file" key mapped to an imported asset.
+  // Base activities map an image key to an imported asset.
   const file = activity.image?.file;
   if (!file) return undefined;
 
@@ -34,23 +34,69 @@ export function ActivitySuggestionView() {
   const activity = state?.activity;
   const filters = state?.filters;
 
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
+  const getSvVoice = () => {
+    const voices = window.speechSynthesis?.getVoices?.() ?? [];
+    return voices.find((v) => v.lang?.toLowerCase().startsWith("sv")) ?? null;
+  };
+
+  // Cancel any ongoing speech without touching React state (safe in effects).
+  const cancelSpeech = () => {
+    window.speechSynthesis?.cancel?.();
+  };
+
+  // Stop speech and reset UI state (use for user actions).
+  const stopSpeech = () => {
+    cancelSpeech();
+    setIsSpeaking(false);
+  };
+
+  const speakActivity = (a: Activity) => {
+    if (!("speechSynthesis" in window)) return;
+
+    // Toggle: if already speaking, stop.
+    if (window.speechSynthesis.speaking || isSpeaking) {
+      stopSpeech();
+      return;
+    }
+
+    const parts: string[] = [];
+    if (a.title) parts.push(a.title);
+    if (a.description) parts.push(a.description);
+    if (a.steps?.length) parts.push("Steg:");
+    if (a.steps?.length) parts.push(...a.steps);
+
+    const utter = new SpeechSynthesisUtterance(parts.join(". "));
+    utter.lang = "sv-SE";
+    utter.rate = 0.95;
+
+    const voice = getSvVoice();
+    if (voice) utter.voice = voice;
+
+    utter.onstart = () => setIsSpeaking(true);
+    utter.onend = () => setIsSpeaking(false);
+    utter.onerror = () => setIsSpeaking(false);
+
+    window.speechSynthesis.speak(utter);
+  };
+
   const hiddenIds = useMemo(() => readHiddenActivityIds(), []);
   const customActivities = useMemo(() => readCustomActivities(), []);
 
   const filteredActivities = useMemo(() => {
     if (!filters) return [];
 
-    // Parent settings: include custom activities and exclude hidden ones.
+    // Apply parent settings: include custom activities, exclude hidden ones.
     const available = [...customActivities, ...allActivities].filter(
-      (a) => !hiddenIds.has(a.id)
+      (a) => !hiddenIds.has(a.id),
     );
 
     return filterActivities(available, filters);
   }, [filters, customActivities, hiddenIds]);
 
   useEffect(() => {
-    // Routing state can be lost on page refresh.
-    // If we still have filters, pick a fallback activity.
+    // Router state can be lost on refresh; recover by picking a fallback activity.
     if (!filters) return;
     if (activity) return;
 
@@ -62,6 +108,22 @@ export function ActivitySuggestionView() {
       state: { activity: first, filters },
     });
   }, [activity, filters, filteredActivities, navigate]);
+
+  useEffect(() => {
+    // Ensure speech is stopped if the user leaves this page.
+    return () => {
+      cancelSpeech();
+    };
+  }, []);
+
+  useEffect(() => {
+    // Stop speech when the activity changes.
+    cancelSpeech();
+
+    // Reset speaking state asynchronously (keeps ESLint rule happy).
+    const id = window.setTimeout(() => setIsSpeaking(false), 0);
+    return () => window.clearTimeout(id);
+  }, [activity?.id]);
 
   if (!filters) {
     return (
@@ -111,13 +173,13 @@ export function ActivitySuggestionView() {
   const imgUrl = getActivityImageUrl(activity);
 
   const getNewActivity = () => {
-    // Avoid repeating the same activity when selecting a new one.
+    // Avoid repeating the same activity.
     const list = filteredActivities.filter((a) => a.id !== activity.id);
     if (list.length === 0) return;
 
     const random = list[Math.floor(Math.random() * list.length)];
 
-    // Replace state on the same route to avoid adding extra history entries.
+    // Replace state to avoid adding extra history entries.
     navigate("/activity-suggestion", {
       replace: true,
       state: { activity: random, filters },
@@ -167,13 +229,27 @@ export function ActivitySuggestionView() {
                   {activity.title}
                 </div>
 
-                <div className="inline-flex items-center justify-center rounded-full bg-emerald-100 px-3 py-2 border-2 border-emerald-600 shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => speakActivity(activity)}
+                  aria-label={
+                    isSpeaking ? "Stoppa uppläsning" : "Läs upp aktivitet"
+                  }
+                  className={[
+                    "inline-flex items-center justify-center rounded-full px-3 py-2 border-2 shadow-sm",
+                    "bg-emerald-100 border-emerald-600",
+                    "transition active:scale-[0.98]",
+                    "focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-600/25",
+                    isSpeaking ? "brightness-95" : "hover:brightness-[0.98]",
+                  ].join(" ")}
+                >
                   <img
                     src={soundIcon}
                     alt=""
+                    aria-hidden="true"
                     className="h-6 w-6 sm:h-7 sm:w-7"
                   />
-                </div>
+                </button>
               </div>
 
               {imgUrl ? (
@@ -181,7 +257,7 @@ export function ActivitySuggestionView() {
                   <div className="w-full max-w-xs sm:max-w-sm md:max-w-md overflow-hidden rounded-3xl border border-black/10 bg-white/60">
                     <img
                       src={imgUrl}
-                      alt={activity.image?.alt ?? activity.title}
+                      alt={activity.image?.alt || activity.title || "Aktivitetsbild"}
                       loading="lazy"
                       className="w-full object-cover rounded-3xl max-h-80 sm:max-h-90 md:max-h-105"
                     />
