@@ -11,7 +11,6 @@ function randomInt(min: number, max: number) {
 }
 
 export function ParentSetup({ onComplete }: Props) {
-  // Generate the math challenge once per mount (so it doesn't change on re-render).
   const challenge = useMemo(() => {
     const a = randomInt(1, 9);
     const b = randomInt(1, 9);
@@ -25,7 +24,6 @@ export function ParentSetup({ onComplete }: Props) {
   const [pin, setPin] = useState<string[]>(["", "", "", ""]);
   const [pinError, setPinError] = useState<string | null>(null);
 
-  // Keep refs to the 4 inputs so we can auto-advance focus (faster PIN entry).
   const pinRefs = useRef<Array<HTMLInputElement | null>>([]);
 
   useEffect(() => {
@@ -61,7 +59,6 @@ export function ParentSetup({ onComplete }: Props) {
       return next;
     });
 
-    // Auto-move focus forward when a digit is entered.
     if (digit && index < 3) {
       pinRefs.current[index + 1]?.focus();
     }
@@ -69,7 +66,7 @@ export function ParentSetup({ onComplete }: Props) {
 
   const onPinKeyDown = (
     index: number,
-    e: React.KeyboardEvent<HTMLInputElement>
+    e: React.KeyboardEvent<HTMLInputElement>,
   ) => {
     if (e.key !== "Backspace") return;
 
@@ -93,8 +90,6 @@ export function ParentSetup({ onComplete }: Props) {
       setPinError("PIN-koden måste vara 4 siffror.");
       return;
     }
-
-    // Store PIN in localStorage for this school project (browser-local).
     setParentPin(pinStr);
     onComplete();
   };
@@ -102,9 +97,13 @@ export function ParentSetup({ onComplete }: Props) {
   return (
     <section className="mx-auto flex min-h-[70dvh] w-full max-w-md flex-col items-center justify-center px-4 text-center">
       <div className="w-full">
-        {/* Visual anchor for "Parent mode" gate */}
         <div className="mx-auto mb-4 grid h-20 w-20 place-items-center rounded-full bg-black/10">
-          <Lock className="h-10 w-10 text-gray-900" strokeWidth={2.5} />
+          <Lock
+            className="h-10 w-10 text-gray-900"
+            strokeWidth={2.5}
+            aria-hidden="true"
+            focusable="false"
+          />
         </div>
 
         <h1 className="text-4xl font-extrabold">Vuxenläge</h1>

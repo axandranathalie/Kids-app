@@ -29,7 +29,6 @@ export function ParentUnlock({ onSuccess }: Props) {
 
   const clearAll = () => {
     setPin(Array(PIN_LENGTH).fill(""));
-    setError(null);
     focusIndex(0);
   };
 
@@ -167,7 +166,12 @@ export function ParentUnlock({ onSuccess }: Props) {
     <section className="mx-auto flex min-h-[70dvh] w-full max-w-md flex-col items-center justify-center px-4 text-center">
       <div className="w-full">
         <div className="mx-auto mb-4 grid h-20 w-20 place-items-center rounded-full bg-black/10">
-          <Unlock className="h-10 w-10 text-gray-900" strokeWidth={2.5} />
+          <Unlock
+            className="h-10 w-10 text-gray-900"
+            strokeWidth={2.5}
+            aria-hidden="true"
+            focusable="false"
+          />
         </div>
 
         <h1 className="text-4xl font-extrabold">Vuxenläge</h1>

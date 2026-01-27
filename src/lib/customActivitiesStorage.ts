@@ -11,7 +11,6 @@ function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((x) => typeof x === "string");
 }
 
-// Runtime guard: LocalStorage is untrusted input, so we validate before using it.
 function isActivity(value: unknown): value is Activity {
   if (!isRecord(value)) return false;
 
@@ -45,8 +44,6 @@ export function readCustomActivities(): Activity[] {
 
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-
-    // Drop invalid entries instead of crashing the UI.
     return parsed.filter(isActivity);
   } catch {
     return [];

@@ -1,4 +1,9 @@
-import type { Activity, AgeGroup, WeatherTag, TimeOfDay } from "../types/activity";
+import type {
+  Activity,
+  AgeGroup,
+  WeatherTag,
+  TimeOfDay,
+} from "../types/activity";
 
 export type KidsWhen = "dag" | "kväll";
 
@@ -20,17 +25,15 @@ function matchesWhen(activityTime: TimeOfDay, when: KidsWhen): boolean {
 }
 
 function matchesWhere(activityWeather: WeatherTag, where: WeatherTag): boolean {
-  // If the activity works anywhere, it matches all where-filters
   if (activityWeather === "valfritt") return true;
-
-  // If user chose "var som helst", accept all activities
   if (where === "valfritt") return true;
-
-  // Otherwise require exact match
   return activityWeather === where;
 }
 
-export function filterActivities(activities: Activity[], filters: KidsFilters): Activity[] {
+export function filterActivities(
+  activities: Activity[],
+  filters: KidsFilters,
+): Activity[] {
   const { age, where, when } = filters;
   if (!age || !where || !when) return [];
 

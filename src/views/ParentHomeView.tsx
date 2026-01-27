@@ -243,6 +243,7 @@ export function ParentHomeView() {
                 onClick={() => setIsCityPickerOpen(true)}
                 aria-haspopup="dialog"
                 aria-expanded={isCityPickerOpen}
+                aria-label={`Välj stad, nu vald: ${selectedCityName}`}
                 className="w-full rounded-xl border border-black/10 bg-white/70 pl-3 pr-10 py-2 text-left text-sm font-semibold text-gray-900"
               >
                 {selectedCityName}
@@ -262,6 +263,9 @@ export function ParentHomeView() {
             aria-modal="true"
             aria-label="Välj väderstad"
             className="fixed inset-0 z-50"
+            onKeyDown={(e) => {
+              if (e.key === "Escape") setIsCityPickerOpen(false);
+            }}
           >
             <button
               type="button"
@@ -288,6 +292,7 @@ export function ParentHomeView() {
 
                   <button
                     type="button"
+                    autoFocus
                     onClick={() => setIsCityPickerOpen(false)}
                     className="rounded-full border border-black/10 bg-white px-3 py-2 text-sm font-semibold"
                   >
