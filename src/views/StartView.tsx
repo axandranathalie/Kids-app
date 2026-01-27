@@ -10,7 +10,7 @@ export function StartView() {
       className="min-h-screen bg-[#F7F1E6] px-4 py-8 sm:px-6 sm:py-10"
       aria-labelledby="start-title"
     >
-      <div className="grid min-h-screen place-items-start pt-10 sm:min-h-0 sm:pt-0">
+      <div className="grid place-items-start pt-10 sm:min-h-0 sm:pt-0">
         <div className="mx-auto flex w-full max-w-sm flex-col items-center sm:max-w-130">
           {/* Logo */}
           <img
@@ -30,14 +30,11 @@ export function StartView() {
               AktivitetsAppen
             </span>
           </h1>
-
-          {/* Buttons */}
           <nav aria-label="Välj läge" className="w-full">
             <div className="flex w-full flex-col gap-3 sm:gap-4">
               {/* Kids */}
               <Link
                 to="/kids"
-                aria-label="Gå till barnläge"
                 className={[
                   "group relative flex items-center",
                   "h-16 w-full rounded-2xl sm:h-20",
@@ -74,7 +71,6 @@ export function StartView() {
               {/* Parent */}
               <Link
                 to="/parent"
-                aria-label="Gå till vuxenläge"
                 className={[
                   "group relative flex items-center",
                   "h-16 w-full rounded-2xl sm:h-20",

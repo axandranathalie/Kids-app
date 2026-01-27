@@ -257,7 +257,11 @@ export function ActivitySuggestionView() {
                   <div className="w-full max-w-xs sm:max-w-sm md:max-w-md overflow-hidden rounded-3xl border border-black/10 bg-white/60">
                     <img
                       src={imgUrl}
-                      alt={activity.image?.alt || activity.title || "Aktivitetsbild"}
+                      alt={
+                        activity.image?.alt ||
+                        activity.title ||
+                        "Aktivitetsbild"
+                      }
                       loading="lazy"
                       className="w-full object-cover rounded-3xl max-h-80 sm:max-h-90 md:max-h-105"
                     />

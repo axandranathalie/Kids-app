@@ -5,7 +5,6 @@ type Props = {
   className?: string;
 };
 
-// Reusable container for grouped content (results, lists, panels).
 export function Card({ children, className = "" }: Props) {
   return (
     <div

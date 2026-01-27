@@ -43,8 +43,6 @@ function validate(d: {
   }
 
   if (d.ageGroups.length === 0) errors.ageGroups = "Välj minst en ålder.";
-
-  // "valfritt" is valid; only guard against empty strings.
   if (!d.where) errors.where = "Välj var aktiviteten kan göras.";
   if (!d.when) errors.when = "Välj när aktiviteten passar.";
 
@@ -64,7 +62,6 @@ export function AddActivityModal({
 }: Props) {
   const seed = initialActivity ?? null;
 
-  // Form state (initialized on mount; parent should remount via key on open/edit)
   const [title, setTitle] = useState(() => seed?.title ?? "");
   const [description, setDescription] = useState(() => seed?.description ?? "");
   const [steps, setSteps] = useState<string[]>(() =>
@@ -101,19 +98,15 @@ export function AddActivityModal({
   const whenLabel = whenOptions.find((o) => o.value === when)?.label ?? "Välj";
 
   const [imageFile, setImageFile] = useState<File | null>(null);
-
-  // Persisted image (Data URL) so it survives refresh via LocalStorage
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(
     () => seed?.image?.src ?? null,
   );
 
-  // Temporary preview URL for immediate feedback (does not survive refresh)
   const imagePreviewSrc = useMemo(() => {
     if (!imageFile) return null;
     return URL.createObjectURL(imageFile);
   }, [imageFile]);
 
-  // What we show in the UI: prefer preview, otherwise saved data URL
   const previewSrc = imagePreviewSrc ?? imageDataUrl;
 
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -262,7 +255,6 @@ export function AddActivityModal({
 
         <div className="max-h-[calc(100dvh-140px)] overflow-y-auto p-5">
           <div className="space-y-4">
-            {/* Image upload */}
             <div>
               <label className="text-sm font-semibold text-gray-800">
                 Ladda upp bild

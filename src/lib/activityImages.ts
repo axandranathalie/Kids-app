@@ -4,7 +4,6 @@ const modules = import.meta.glob("../assets/activities/*.{png,jpg,jpeg,webp}", {
   as: "url",
 });
 
-// Maps a filename -> resolved URL
 export const activityImageByFile: Record<string, string> = {};
 
 for (const path in modules) {

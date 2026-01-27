@@ -5,7 +5,7 @@ export type WeatherIconKey = "sun" | "cloudy" | "rain" | "snow";
 export function pickWeatherIconKey(w: WeatherSummary): WeatherIconKey {
   const code = w.weatherCode;
 
-  // Open-Meteo weather codes (förenklad)
+  // Open-Meteo weather codes
   // 0 = clear
   if (code === 0) return "sun";
 

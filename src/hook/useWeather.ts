@@ -13,8 +13,7 @@ export function useWeather(coords: { lat: number; lon: number } | null) {
     error: null,
   });
 
-  // Memoized "request key" so we only refetch when the location meaningfully changes.
-  // (toFixed prevents tiny float diffs from triggering unnecessary requests.)
+  // Rounded key to avoid refetching on tiny float diffs.
   const key = useMemo(() => {
     if (!coords) return null;
     return `${coords.lat.toFixed(4)}:${coords.lon.toFixed(4)}`;
@@ -23,7 +22,7 @@ export function useWeather(coords: { lat: number; lon: number } | null) {
   useEffect(() => {
     if (!coords || !key) return;
 
-    // Prevent setting state after unmount or after coords change mid-request.
+    // Prevent state updates after unmount / stale request.
     let cancelled = false;
 
     (async () => {

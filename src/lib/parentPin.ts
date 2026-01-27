@@ -2,7 +2,6 @@ const PIN_KEY = "kidsapp_parent_pin";
 
 /**
  * Parent mode PIN helpers.
- * Note: This stores the PIN in localStorage (not secure) and is meant for this school project only.
  */
 export function getParentPin(): string | null {
   const pin = localStorage.getItem(PIN_KEY);

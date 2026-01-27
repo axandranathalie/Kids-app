@@ -39,15 +39,13 @@ export function KidsView() {
   const navigate = useNavigate();
   const [filters, setFilters] = useState<KidsFilters>(defaultFilters);
 
-  // Enable CTA only when all filters are selected.
   const canSubmit = Boolean(filters.age && filters.where && filters.when);
 
-  // Read selected city from localStorage (preset cities).
   const selectedCity = useMemo(() => getSelectedCity(), []);
 
   const weatherCoords = useMemo(
     () => ({ lat: selectedCity.lat, lon: selectedCity.lon }),
-    [selectedCity.lat, selectedCity.lon]
+    [selectedCity.lat, selectedCity.lon],
   );
 
   const weather = useWeather(weatherCoords);
@@ -75,16 +73,12 @@ export function KidsView() {
     const random =
       filteredActivities[Math.floor(Math.random() * filteredActivities.length)];
 
-    // Navigate to the suggestion view and pass both the chosen activity and the selected filters.
     navigate("/activity-suggestion", { state: { activity: random, filters } });
   };
 
   return (
     <AppLayout
       header={
-        // Responsive header layout:
-        // - Mobile: back button left, weather right, title on its own row centered
-        // - Tablet/Desktop: title centered column, weather in the right column
         <header className="grid grid-cols-2 items-start gap-y-3 sm:grid-cols-3 sm:items-center">
           <div className="justify-self-start">
             <Link
@@ -122,12 +116,12 @@ export function KidsView() {
                     key === "sun"
                       ? sunIcon
                       : key === "rain"
-                      ? rainIcon
-                      : key === "snow"
-                      ? snowyIcon
-                      : cloudyIcon;
+                        ? rainIcon
+                        : key === "snow"
+                          ? snowyIcon
+                          : cloudyIcon;
 
-                  return <img src={iconSrc} alt="" className="h-17 w-17" />;
+                  return <img src={iconSrc} alt="" className="h-16 w-16" />;
                 })()}
               </div>
             ) : null}
